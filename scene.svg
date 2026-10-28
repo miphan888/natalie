@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fd6ff"/>
+      <stop offset="1" stop-color="#d9f4ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <path d="M180 520 A220 140 0 0 1 620 520" fill="none" stroke="#ff8fab" stroke-width="16"/>
+  <path d="M196 520 A204 124 0 0 1 604 520" fill="none" stroke="#ffd166" stroke-width="16"/>
+  <path d="M212 520 A188 108 0 0 1 588 520" fill="none" stroke="#8ce99a" stroke-width="16"/>
+  <path d="M228 520 A172 92 0 0 1 572 520" fill="none" stroke="#74c0fc" stroke-width="16"/>
+  <g fill="#fff">
+    <ellipse cx="220" cy="120" rx="90" ry="36"/>
+    <ellipse cx="280" cy="108" rx="70" ry="30"/>
+    <ellipse cx="160" cy="112" rx="54" ry="24"/>
+    <ellipse cx="980" cy="90" rx="100" ry="38"/>
+    <ellipse cx="1060" cy="78" rx="64" ry="26"/>
+    <ellipse cx="1380" cy="150" rx="80" ry="30"/>
+    <ellipse cx="520" cy="70" rx="60" ry="22"/>
+  </g>
+  <g transform="translate(1320 36)">
+    <circle r="78" cx="78" cy="78" fill="#ffe14a"/>
+    <circle r="92" cx="78" cy="78" fill="#ffe14a" opacity=".28"/>
+    <circle cx="52" cy="70" r="8" fill="#6a4218"/>
+    <circle cx="104" cy="70" r="8" fill="#6a4218"/>
+    <path d="M50 96 q28 28 56 0" fill="none" stroke="#6a4218" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <text x="90" y="250" font-size="42" fill="#ff5d8f" font-family="Trebuchet MS, Segoe UI, sans-serif" font-weight="700">♪</text>
+  <text x="1180" y="220" font-size="36" fill="#7c5cff" font-family="Trebuchet MS, Segoe UI, sans-serif" font-weight="700">♫</text>
+  <text x="700" y="160" font-size="30" fill="#ffb703" font-family="Trebuchet MS, Segoe UI, sans-serif" font-weight="700">♪</text>
+  <path d="M0 560 C200 500 380 620 560 560 C760 490 980 640 1200 560 C1360 510 1480 580 1600 540 L1600 900 L0 900 Z" fill="#b6f38a"/>
+  <path d="M0 640 C240 580 420 700 700 630 C980 560 1200 700 1600 620 L1600 900 L0 900 Z" fill="#7ed957"/>
+  <path d="M0 760 C300 720 600 800 900 740 C1200 690 1400 780 1600 730 L1600 900 L0 900 Z" fill="#5ecf4a"/>
+  <ellipse cx="260" cy="780" rx="150" ry="36" fill="#7ecbff"/>
+  <ellipse cx="260" cy="774" rx="120" ry="22" fill="#b9e6ff"/>
+  <g transform="translate(1180 430)">
+    <rect x="20" y="80" width="180" height="120" rx="8" fill="#ff6b6b"/>
+    <polygon points="0,88 110,10 220,88" fill="#c0392b"/>
+    <rect x="86" y="130" width="42" height="70" rx="4" fill="#ffe08a"/>
+    <rect x="40" y="108" width="28" height="28" rx="4" fill="#fff3bf"/>
+    <rect x="150" y="108" width="28" height="28" rx="4" fill="#fff3bf"/>
+  </g>
+  <g transform="translate(70 500)">
+    <rect x="30" y="70" width="16" height="70" fill="#8d6e63"/>
+    <circle cx="38" cy="50" r="36" fill="#3dcb6e"/>
+    <circle cx="16" cy="62" r="22" fill="#2fbf62"/>
+    <circle cx="60" cy="64" r="24" fill="#49d478"/>
+  </g>
+  <g transform="translate(980 560)">
+    <rect x="40" y="40" width="14" height="50" fill="#8d6e63"/>
+    <circle cx="47" cy="28" r="26" fill="#3dcb6e"/>
+  </g>
+  <g>
+    <rect x="40" y="700" width="70" height="36" rx="10" fill="#ff5d8f"/>
+    <rect x="100" y="708" width="36" height="28" rx="6" fill="#ffd166"/>
+    <circle cx="58" cy="740" r="10" fill="#4a2d5c"/>
+    <circle cx="108" cy="740" r="10" fill="#4a2d5c"/>
+    <circle cx="78" cy="712" r="8" fill="#fff"/>
+  </g>
+  <g transform="translate(430 690)">
+    <ellipse cx="40" cy="36" rx="34" ry="22" fill="#fff"/>
+    <ellipse cx="78" cy="30" rx="22" ry="16" fill="#fff"/>
+    <circle cx="86" cy="28" r="3" fill="#4a2d5c"/>
+    <ellipse cx="28" cy="58" rx="8" ry="5" fill="#ffd166"/>
+    <ellipse cx="52" cy="58" rx="8" ry="5" fill="#ffd166"/>
+  </g>
+  <g transform="translate(620 710)">
+    <ellipse cx="36" cy="28" rx="30" ry="18" fill="#ffe08a"/>
+    <circle cx="58" cy="22" r="12" fill="#ffe08a"/>
+    <circle cx="62" cy="20" r="2" fill="#4a2d5c"/>
+    <path d="M66 24 q8 4 4 8" fill="#ff8a3d"/>
+  </g>
+  <g font-family="Trebuchet MS, Segoe UI, sans-serif">
+    <g transform="translate(150 620)">
+      <circle cx="0" cy="0" r="28" fill="#ff5d8f" stroke="#fff" stroke-width="4"/>
+      <circle cx="-10" cy="-4" r="4" fill="#4a2d5c"/>
+      <circle cx="10" cy="-4" r="4" fill="#4a2d5c"/>
+      <path d="M-10 8 q10 10 20 0" fill="none" stroke="#4a2d5c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M16 -22 q10 -12 16 0" fill="#ff8fab"/>
+    </g>
+    <g transform="translate(240 650)">
+      <circle cx="0" cy="0" r="24" fill="#74c0fc" stroke="#fff" stroke-width="4"/>
+      <circle cx="-8" cy="-2" r="3.5" fill="#4a2d5c"/>
+      <circle cx="8" cy="-2" r="3.5" fill="#4a2d5c"/>
+      <path d="M-8 8 q8 8 16 0" fill="none" stroke="#4a2d5c" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(820 640)">
+      <circle cx="0" cy="0" r="26" fill="#ffd166" stroke="#fff" stroke-width="4"/>
+      <circle cx="-8" cy="-2" r="3.5" fill="#4a2d5c"/>
+      <circle cx="8" cy="-2" r="3.5" fill="#4a2d5c"/>
+      <path d="M-8 8 q8 9 16 0" fill="none" stroke="#4a2d5c" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g fill="#ff5d8f">
+    <circle cx="80" cy="860" r="14"/>
+    <circle cx="140" cy="868" r="16"/>
+    <circle cx="200" cy="858" r="12"/>
+    <circle cx="360" cy="872" r="15"/>
+    <circle cx="500" cy="860" r="13"/>
+    <circle cx="760" cy="874" r="16"/>
+    <circle cx="900" cy="862" r="12"/>
+    <circle cx="1100" cy="870" r="15"/>
+    <circle cx="1280" cy="858" r="14"/>
+    <circle cx="1460" cy="872" r="16"/>
+    <circle cx="1540" cy="860" r="11"/>
+  </g>
+  <g fill="#ffd166">
+    <circle cx="110" cy="850" r="10"/>
+    <circle cx="430" cy="866" r="11"/>
+    <circle cx="640" cy="858" r="9"/>
+    <circle cx="1000" cy="868" r="12"/>
+    <circle cx="1360" cy="864" r="10"/>
+  </g>
+  <g>
+    <ellipse cx="1480" cy="180" rx="16" ry="22" fill="#ff5d8f"/>
+    <ellipse cx="1510" cy="150" rx="14" ry="20" fill="#74c0fc"/>
+    <ellipse cx="1455" cy="145" rx="14" ry="20" fill="#ffd166"/>
+    <path d="M1480 202 v40 M1510 170 v48 M1455 165 v52" stroke="#8d6e63" stroke-width="2"/>
+  </g>
+</svg>
