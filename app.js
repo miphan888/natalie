@@ -1072,6 +1072,7 @@ function topHTML() {
     '<button type="button" class="pill ' + (lang === 'vi' ? 'on' : '') + '" data-act="lang" data-lang="vi">VI</button>' +
     '<button type="button" data-act="sound" class="' + (progress.sound ? 'on' : '') + '">' + ui('sound') + '</button>' +
     '<button type="button" data-act="read" class="' + (progress.read ? 'on' : '') + '">' + ui('read') + '</button>' +
+    '<button type="button" data-act="wood-toggle">' + (lang === 'vi' ? 'Bàn gỗ' : 'Wood frame') + '</button>' +
     '<button type="button" data-act="full">' + (lang === 'vi' ? 'Cả màn hình' : 'Full screen') + '</button>' +
     '<span class="jar"><i class="dotberry"></i>' + (progress.fruit || 0) + '</span></div></header>';
 }
@@ -1934,6 +1935,137 @@ function renderTen() {
   }
   return tenShell(inner, msg, g, vi);
 }
+function ensureWood() {
+  if (!state.wood || state.wood.length !== 13) {
+    state.wood = [];
+    for (let i = 0; i < 13; i++) state.wood.push({ heaven: false, earth: 0 });
+  }
+}
+function woodValue() {
+  ensureWood();
+  let n = 0;
+  for (let i = 0; i < 13; i++) {
+    const v = (state.wood[i].heaven ? 5 : 0) + state.wood[i].earth;
+    n += v * Math.pow(10, 12 - i);
+  }
+  return n;
+}
+function woodMetrics() {
+  const beadH = 32;
+  const step = 34;
+  const beamH = 14;
+  const topPad = 6;
+  const beamTop = topPad + step + beadH;
+  const earthUp = beamTop + beamH + 3;
+  const rodH = earthUp + step + 5 * beadH + 4 * 2 + 6;
+  return { beadH: beadH, step: step, beamH: beamH, beamTop: beamTop, earthUp: earthUp, rodH: rodH, topPad: topPad };
+}
+function woodHeavenY(on, m) {
+  return on ? m.beamTop - m.beadH - 2 : m.topPad;
+}
+function woodEarthY(b, counted, m) {
+  return m.earthUp + (counted ? 0 : m.step) + b * m.step;
+}
+function woodHTML() {
+  if (!state.woodOpen) return '';
+  ensureWood();
+  const m = woodMetrics();
+  const vi = progress.lang === 'vi';
+  const rods = state.wood.map(function (rod, i) {
+    const dot = (12 - i) % 3 === 0 ? '<i></i>' : '';
+    let beads = '<button type="button" class="wood-bead" data-act="wood-heaven" data-rod="' + i + '" style="top:' + woodHeavenY(rod.heaven, m) + 'px"></button>';
+    for (let b = 0; b < 5; b++) {
+      beads += '<button type="button" class="wood-bead" data-act="wood-earth" data-rod="' + i + '" data-bead="' + b + '" style="top:' + woodEarthY(b, b < rod.earth, m) + 'px"></button>';
+    }
+    return '<div class="wood-rod">' + beads + '<div class="wood-beam" style="top:' + m.beamTop + 'px">' + dot + '</div></div>';
+  }).join('');
+  return '<div class="wood-win" role="dialog" aria-label="wood abacus"><section class="wood-board">' +
+    '<i class="wood-brass tl"></i><i class="wood-brass tr"></i><i class="wood-brass bl"></i><i class="wood-brass br"></i>' +
+    '<button type="button" class="wood-x" data-act="wood-toggle" aria-label="' + (vi ? 'Đóng' : 'Close') + '">×</button>' +
+    '<span class="wood-num">' + woodValue().toLocaleString(vi ? 'vi-VN' : 'en-US') + '</span>' +
+    '<div class="wood-rods" style="height:' + m.rodH + 'px">' + rods + '</div></section></div>';
+}
+function paintWoodRod(i) {
+  const col = document.querySelectorAll('.wood-rod')[i];
+  const rod = state.wood && state.wood[i];
+  if (!col || !rod) return;
+  const m = woodMetrics();
+  const heaven = col.querySelector('[data-act="wood-heaven"]');
+  if (heaven) heaven.style.top = woodHeavenY(rod.heaven, m) + 'px';
+  const beads = col.querySelectorAll('[data-act="wood-earth"]');
+  for (let b = 0; b < beads.length; b++) beads[b].style.top = woodEarthY(b, b < rod.earth, m) + 'px';
+  const num = document.querySelector('.wood-num');
+  if (num) num.textContent = woodValue().toLocaleString(progress.lang === 'vi' ? 'vi-VN' : 'en-US');
+}
+function bindWood() {
+  const box = document.querySelector('.wood-rods');
+  if (!box || box.dataset.bound) return;
+  box.dataset.bound = '1';
+  const m = woodMetrics();
+  let drag = null;
+  box.addEventListener('pointerdown', function (e) {
+    const bead = e.target.closest('.wood-bead');
+    if (!bead) return;
+    const col = bead.closest('.wood-rod');
+    drag = {
+      pointerId: e.pointerId,
+      rodIndex: Array.prototype.indexOf.call(box.querySelectorAll('.wood-rod'), col),
+      kind: bead.dataset.act === 'wood-heaven' ? 'heaven' : 'earth',
+      bead: Number(bead.dataset.bead || 0),
+      startY: e.clientY,
+      startTop: parseFloat(bead.style.top) || 0,
+      moved: false
+    };
+    try { box.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  box.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const dy = e.clientY - drag.startY;
+    if (Math.abs(dy) < 3) return;
+    drag.moved = true;
+    const rod = state.wood[drag.rodIndex];
+    const col = box.querySelectorAll('.wood-rod')[drag.rodIndex];
+    if (!rod || !col) return;
+    if (drag.kind === 'heaven') {
+      const minTop = m.topPad;
+      const maxTop = m.beamTop - m.beadH - 2;
+      const top = Math.max(minTop, Math.min(maxTop, drag.startTop + dy));
+      const el = col.querySelector('[data-act="wood-heaven"]');
+      if (el) el.style.top = top + 'px';
+      rod.heaven = top > (minTop + maxTop) / 2;
+    } else {
+      const b = drag.bead;
+      const minTop = woodEarthY(b, true, m);
+      const maxTop = woodEarthY(b, false, m);
+      const top = Math.max(Math.min(minTop, maxTop), Math.min(Math.max(minTop, maxTop), drag.startTop + dy));
+      const beads = col.querySelectorAll('[data-act="wood-earth"]');
+      if (beads[b]) beads[b].style.top = top + 'px';
+      const toward = top < (minTop + maxTop) / 2;
+      rod.earth = toward ? Math.max(rod.earth, b + 1) : Math.min(rod.earth, b);
+      for (let i = 0; i < beads.length; i++) {
+        if (i === b) continue;
+        beads[i].style.top = woodEarthY(i, i < rod.earth, m) + 'px';
+      }
+    }
+    const num = document.querySelector('.wood-num');
+    if (num) num.textContent = woodValue().toLocaleString(progress.lang === 'vi' ? 'vi-VN' : 'en-US');
+    e.preventDefault();
+  });
+  function end(e) {
+    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+    const d = drag;
+    drag = null;
+    if (!d.moved) {
+      const rod = state.wood[d.rodIndex];
+      if (d.kind === 'heaven') rod.heaven = !rod.heaven;
+      else rod.earth = d.bead < rod.earth ? d.bead : d.bead + 1;
+    }
+    paintWoodRod(d.rodIndex);
+  }
+  box.addEventListener('pointerup', end);
+  box.addEventListener('pointercancel', end);
+}
 function render() {
   if (typeof document === 'undefined') return;
   const shake = state.shake;
@@ -1950,7 +2082,7 @@ function render() {
   else if (state.screen === 'clear') html = renderClear();
   else if (state.screen === 'parents') html = renderParents();
   else if (state.screen === 'tenplay') html = renderTen();
-  app.innerHTML = html + sorobanHTML();
+  app.innerHTML = html + sorobanHTML() + woodHTML();
   state.shake = null;
   if (state.screen === 'play' && state.focus) {
     const el = app.querySelector('[data-slot="' + state.focus + '"]');
@@ -1964,6 +2096,7 @@ function render() {
     if (el) el.classList.add('shake');
   }
   bindSoroban();
+  bindWood();
   paintAllRods();
   requestAnimationFrame(paintAllRods);
 }
@@ -2390,6 +2523,12 @@ function onClick(e) {
     if (!state.soroFull && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
     return;
   }
+  if (act === 'wood-toggle') {
+    state.woodOpen = !state.woodOpen;
+    render();
+    return;
+  }
+  if (act === 'wood-heaven' || act === 'wood-earth') return;
   if (act === 'soro-toggle') {
     state.sorobanOpen = !state.sorobanOpen;
     if (!state.sorobanOpen && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
