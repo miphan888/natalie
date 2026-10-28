@@ -1633,7 +1633,7 @@ function pickTen(n) {
     save();
     if (progress.sound) chime();
     render();
-    later(function () { if (state.screen === 'tenplay') { startTen(false); render(); } }, 850);
+    later(function () { if (state.screen === 'tenplay') { startTen(false); render(); } }, 1400);
   } else {
     g.flash = 'no';
     if (progress.sound) beep(180, 0.1, 'triangle');
@@ -1643,31 +1643,47 @@ function pickTen(n) {
 function renderTen() {
   const g = state.ten || { need: 7, choices: [3, 1, 8, 5], streak: 0, flash: '' };
   const vi = progress.lang === 'vi';
+  const pals = [
+    { e: '⭐', c: '#ffe08a' }, { e: '🍒', c: '#ff6b9a' }, { e: '🍋', c: '#ffe56a' },
+    { e: '🍓', c: '#ff5d8f' }, { e: '🫐', c: '#9b8cff' }, { e: '🍊', c: '#ffb15a' },
+    { e: '🍇', c: '#d0a8ff' }, { e: '🍎', c: '#ff8a8a' }, { e: '🍑', c: '#ffc1ae' },
+    { e: '🥝', c: '#9be58a' }, { e: '🍈', c: '#c8f5a0' }
+  ];
+  const hero = pals[g.need] || pals[0];
   const ask = vi
-    ? (g.need + ' đang tìm bạn để thành 10.')
-    : (g.need + ' is looking for a friend to make 10.');
+    ? (hero.e + ' ' + g.need + ' đang cô đơn. Bạn nào cộng thành 10?')
+    : (hero.e + ' ' + g.need + ' is lonely. Who makes 10?');
   const msg = g.flash === 'yes'
-    ? (vi ? 'Đúng! ' + g.need + ' + ' + (10 - g.need) + ' = 10' : 'Yes! ' + g.need + ' + ' + (10 - g.need) + ' = 10')
+    ? (vi ? 'Ôi! ' + g.need + ' + ' + (10 - g.need) + ' = 10. Hai bạn ôm nhau!' : 'Yes! ' + g.need + ' + ' + (10 - g.need) + ' = 10. They found each other!')
     : g.flash === 'no'
-      ? (vi ? 'Chưa phải. Bạn của ' + g.need + ' cộng lại phải bằng 10.' : 'Not yet. The friend of ' + g.need + ' has to make 10.')
+      ? (vi ? 'Chưa phải bạn ấy. Nhìn quả khác xem!' : 'Not that friend. Peek at another fruit!')
       : ask;
   const spots = [
-    { x: '-168px', y: '-78px', z: '80px', c: '#ff5d8f', d: '0s' },
-    { x: '156px', y: '-36px', z: '130px', c: '#7dde6a', d: '.4s' },
-    { x: '-120px', y: '96px', z: '36px', c: '#74c0fc', d: '.8s' },
-    { x: '132px', y: '88px', z: '100px', c: '#e7b0ff', d: '1.1s' }
+    { x: '-150px', y: '-90px', z: '40px', tilt: '-8deg', d: '0s' },
+    { x: '150px', y: '-50px', z: '90px', tilt: '7deg', d: '.35s' },
+    { x: '-110px', y: '70px', z: '20px', tilt: '6deg', d: '.7s' },
+    { x: '120px', y: '78px', z: '70px', tilt: '-6deg', d: '1s' }
   ];
   const orbs = g.choices.map(function (n, i) {
     const s = spots[i] || spots[0];
+    const pal = pals[n] || pals[1];
     const mark = g.picked === n ? (n === 10 - g.need ? ' yes' : ' no') : '';
-    return '<button type="button" class="ten-orb' + mark + '" data-act="ten-pick" data-n="' + n + '" style="--x:' + s.x + ';--y:' + s.y + ';--z:' + s.z + ';--c:' + s.c + ';--d:' + s.d + '">' + n + '</button>';
+    return '<button type="button" class="ten-orb' + mark + '" data-act="ten-pick" data-n="' + n + '" style="--x:' + s.x + ';--y:' + s.y + ';--z:' + s.z + ';--tilt:' + s.tilt + ';--c:' + pal.c + ';--d:' + s.d + '"><em>' + pal.e + '</em><b>' + n + '</b></button>';
   }).join('');
+  let hearts = '';
+  if (g.flash === 'yes') {
+    for (let i = 0; i < 8; i++) hearts += '<i style="left:' + (8 + i * 11) + '%;animation-delay:' + (i * 0.08) + 's">' + (i % 2 ? '💛' : '💗') + '</i>';
+  }
   const best = progress.tenBest || 0;
   return '<div class="wrap">' + topHTML() +
-    '<div class="playtop"><button type="button" class="pill" data-act="intro">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Liên tiếp ' : 'Streak ') + g.streak + (best ? ' · ' + best : '') + '</span></div>' +
-    '<div class="tenworld"><div class="ten-sky"><i class="ten-cloud c1"></i><i class="ten-cloud c2"></i><div class="ten-bird" aria-hidden="true">🦉</div>' +
-    '<div class="ten-stage"><div class="ten-nest"><b>' + g.need + '</b><small>' + (vi ? 'cần bạn' : 'needs a friend') + '</small></div>' + orbs + '</div></div>' +
-    '<p class="ten-msg ' + (g.flash || '') + '">' + esc(msg) + '</p></div></div>';
+    '<div class="playtop"><button type="button" class="pill" data-act="intro">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Bạn tìm được ' : 'Friends ') + g.streak + (best ? ' · ' + best : '') + '</span></div>' +
+    '<div class="tenworld"><div class="ten-sky' + (g.flash === 'yes' ? ' party' : '') + '"><div class="ten-rainbow"></div>' +
+    '<i class="spark" style="left:12%;top:18%">✦</i><i class="spark" style="left:62%;top:12%;animation-delay:.6s">✦</i><i class="spark" style="right:16%;top:28%;animation-delay:1s">✧</i>' +
+    '<i class="butterfly" style="left:10%;top:34%">🦋</i><i class="butterfly" style="right:14%;top:42%;animation-delay:-2s">🦋</i>' +
+    '<div class="ten-island"><i style="left:30px">🌷</i><i style="left:120px">🌼</i><i style="left:200px">🌸</i></div>' +
+    '<div class="hearts">' + hearts + '</div>' +
+    '<div class="ten-hero" style="--c:' + hero.c + '"><span>' + hero.e + '</span><b>' + g.need + '</b></div>' +
+    orbs + '</div><p class="ten-msg ' + (g.flash || '') + '">' + esc(msg) + '</p></div></div>';
 }
 function render() {
   if (typeof document === 'undefined') return;
