@@ -1007,7 +1007,7 @@ function slotHTML(tok, entries, mode) {
   const shake = state.shake === tok.slot ? ' shake' : '';
   const on = state.focus === tok.slot ? ' on' : '';
   const label = tok.cap ? t(tok.cap) : tok.slot;
-  return '<label class="field"><input class="slot' + bad + shake + on + '" data-slot="' + tok.slot + '" inputmode="numeric" maxlength="' + tok.max + '" autocomplete="off" value="' + esc(val) + '" aria-label="' + esc(label) + '">' + cap + '</label>';
+  return '<label class="field"><input class="slot' + bad + shake + on + '" data-slot="' + tok.slot + '" inputmode="numeric" enterkeyhint="done" pattern="[0-9]*" maxlength="' + tok.max + '" autocomplete="off" value="' + esc(val) + '" aria-label="' + esc(label) + '">' + cap + '</label>';
 }
 function rowHTML(row, entries, mode) {
   return '<div class="eq">' + row.map(tok => {
@@ -1016,7 +1016,7 @@ function rowHTML(row, entries, mode) {
     if (tok.echo) {
       const v = mode.solved ? String(findExpect(mode.problem, tok.echo)) : (entries[tok.echo] || '');
       const filled = v !== '' && v != null;
-      return '<span class="echo ' + (filled ? 'filled' : '') + '">' + (filled ? esc(v) : '?') + '</span>';
+      return '<span class="echo ' + (filled ? 'filled' : '') + '" data-echo="' + esc(tok.echo) + '">' + (filled ? esc(v) : '?') + '</span>';
     }
     if (tok.slot) return slotHTML(tok, entries, mode);
     return '';
@@ -1138,6 +1138,13 @@ function dotsHTML() {
   for (let k = 0; k < n; k++) h += '<i class="' + (k < i ? 'did' : k === i ? 'now' : '') + '"></i>';
   return '<div class="dots" aria-hidden="true">' + h + '</div>';
 }
+function usePhoneKeys() {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  const touch = window.matchMedia('(pointer: coarse)').matches || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
+  const portrait = window.matchMedia('(orientation: portrait)').matches;
+  const phone = window.matchMedia('(max-width: 1024px)').matches;
+  return !!(touch && portrait && phone);
+}
 function padHTML() {
   const keys = [['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['bs', '←'], ['0', '0'], ['ok', '✓']];
   const p = cur();
@@ -1170,12 +1177,15 @@ function renderPlay() {
       '<button type="button" class="quiet" data-act="sit">' + esc(progress.sit ? ui('sitOn') : ui('sitOff')) + '</button></div>';
   }
   const showPad = !watch && !(state.demo && (state.round.demoPhase === 'done' || state.round.demoPhase === 'solved'));
+  const nativeKeys = showPad && usePhoneKeys();
+  const ready = p && inputSlots(p).every(function (s) { return state.entries[s.slot]; }) ? 'ready' : '';
+  const phoneCheck = nativeKeys ? '<button type="button" class="check phone-check ' + ready + '" data-act="check">' + esc(ui('check')) + '</button>' : '';
   const title = state.demo ? ui('watch') : (t(headM) + ' · ' + t(LEVEL_NAME[(state.level || 1) - 1]));
   return '<div class="wrap">' + topHTML() +
     '<div class="playtop"><button type="button" class="pill" data-act="back">' + esc(ui('back')) + '</button><strong>' + esc(title) + '</strong>' + dotsHTML() + '</div>' +
-    banner + '<div class="playwrap"><article class="playcard">' + cardInner(p, {}) +
+    banner + '<div class="playwrap' + (nativeKeys ? ' native-keys' : '') + '"><article class="playcard">' + cardInner(p, {}) + phoneCheck +
     '<div class="bubble" aria-live="polite">' + pipSVG(mood) + '<div>' + bothHTML(bubble) + speakers(bubble) + recap + sit + actions + '</div></div></article>' +
-    (showPad ? padHTML() : '') + '</div>' +
+    (showPad && !nativeKeys ? padHTML() : '') + '</div>' +
     (state.leaveAsk ? '<div class="dlgback"><div class="dlg">' + bothHTML(bi(UI.leave.en, UI.leave.vi)) + bothHTML(bi(UI.leave2.en, UI.leave2.vi)) +
       '<div class="row"><button type="button" class="textbtn sun" data-act="stay">' + esc(ui('stay')) + '</button><button type="button" class="textbtn" data-act="home">' + esc(ui('garden')) + '</button></div></div></div>' : '') +
     '</div>';
@@ -1554,7 +1564,7 @@ function soroHelpHTML() {
 function render() {
   if (typeof document === 'undefined') return;
   const shake = state.shake;
-  document.body.className = 'screen-' + state.screen + (state.sorobanOpen ? ' soro-open' : '');
+  document.body.className = 'screen-' + state.screen + (state.sorobanOpen ? ' soro-open' : '') + (usePhoneKeys() ? ' phone-keys' : '');
   document.documentElement.lang = progress.lang === 'vi' ? 'vi' : 'en';
   const kid = progress.name || 'Natalie';
   document.title = kid + (progress.lang === 'vi' ? ' — Vườn hát' : "'s Garden");
@@ -2142,9 +2152,29 @@ function onInput(e) {
   const slot = findSlot(cur(), id);
   if (!slot || slot.pre) return;
   const v = String(e.target.value || '').replace(/\D/g, '').slice(0, slot.max);
+  if (e.target.value !== v) e.target.value = v;
   state.entries[id] = v;
   state.focus = id;
   if (state.bad) delete state.bad[id];
+  e.target.classList.remove('bad');
+  if (usePhoneKeys()) {
+    document.querySelectorAll('[data-echo="' + id + '"]').forEach(function (n) {
+      n.textContent = v || '?';
+      n.classList.toggle('filled', !!v);
+    });
+    const check = document.querySelector('.phone-check');
+    const problem = cur();
+    if (check && problem) check.classList.toggle('ready', inputSlots(problem).every(function (s) { return state.entries[s.slot]; }));
+    if (v.length >= slot.max) {
+      const next = firstEmpty(cur(), state.entries);
+      if (next && next !== id) {
+        state.focus = next;
+        const n = document.querySelector('[data-slot="' + next + '"]');
+        if (n && n.focus) n.focus();
+      }
+    }
+    return;
+  }
   render();
 }
 function onKeyDown(e) {
@@ -2195,6 +2225,15 @@ function init() {
   document.addEventListener('click', onClick);
   document.addEventListener('input', onInput);
   document.addEventListener('keydown', onKeyDown);
+  function onOrient() {
+    if (state.screen === 'play') render();
+  }
+  if (window.matchMedia) {
+    const orient = window.matchMedia('(orientation: portrait)');
+    if (orient.addEventListener) orient.addEventListener('change', onOrient);
+    else if (orient.addListener) orient.addListener(onOrient);
+  }
+  window.addEventListener('orientationchange', function () { setTimeout(onOrient, 160); });
   window.addEventListener('resize', function () { if (state.sorobanOpen) paintAllRods(); });
   document.addEventListener('fullscreenchange', function () { if (state.sorobanOpen) requestAnimationFrame(paintAllRods); });
   document.addEventListener('focusin', onFocus);

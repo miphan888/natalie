@@ -335,6 +335,9 @@
     background: var(--leaf); color: #fff;
   }
   .check.ready { background: var(--sun); color: var(--ink); }
+  .phone-check { width: 100%; margin-top: 12px; }
+  .playwrap.native-keys { grid-template-columns: 1fr; }
+  body.phone-keys .pad { display: none; }
   .typehint { display: none; color: var(--muted); font-size: 13px; text-align: center; margin: 6px 0 0; }
   @media (hover: hover) { .typehint { display: block; } }
   .hintrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
@@ -758,6 +761,6 @@
 <div class="cloud c4"></div>
 <div id="app"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">This garden needs JavaScript. / Vườn này cần JavaScript.</p></noscript>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
