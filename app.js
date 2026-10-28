@@ -1478,16 +1478,17 @@ function sorobanHTML() {
   const rods = state.soroban.map(function (rod, i) {
     const place = state.soroban.length - 1 - i;
     const dot = place % 3 === 0 ? '<i></i>' : '';
-    const heavenTop = (rod.heaven ? 16 : 2.5) + '%';
-    let beads = '<button type="button" class="bead" style="top:' + heavenTop + 'px" data-act="soro-heaven" data-rod="' + i + '" aria-label="5"></button>';
+    const heavenTop = (rod.heaven ? 16 : 1) + '%';
+    let beads = '<button type="button" class="bead" style="top:' + heavenTop + '" data-act="soro-heaven" data-rod="' + i + '" aria-label="5"></button>';
     for (let b = 0; b < 4; b++) {
-      const top = (b < rod.earth ? (34 + b * 10.5) : (90 - (4 - b) * 10.5)) + '%';
-      beads += '<button type="button" class="bead" style="top:' + top + 'px" data-act="soro-earth" data-rod="' + i + '" data-bead="' + b + '" aria-label="1"></button>';
+      const top = earthTop(b, b < rod.earth);
+      beads += '<button type="button" class="bead" style="top:' + top + '" data-act="soro-earth" data-rod="' + i + '" data-bead="' + b + '" aria-label="1"></button>';
     }
     return '<div class="soro-rod">' + beads + '<div class="beam">' + dot + '</div></div>';
   }).join('');
   const num = sorobanValue().toLocaleString(vi ? 'vi-VN' : 'en-US');
-  const color = progress.soroColor || 'black';
+  if (progress.soroColor !== 'white') progress.soroColor = 'black';
+  const color = progress.soroColor;
   return '<div class="soro-win' + (state.soroFull ? ' full' : '') + '" role="dialog" aria-label="' + (vi ? 'Bàn tính' : 'Abacus') + '">' +
     (state.soroHelp ? soroHelpHTML() : '') +
     '<section class="soro-board beads-' + color + '"><i class="brass tl"></i><i class="brass tr"></i><i class="brass bl"></i><i class="brass br"></i>' +
@@ -1505,11 +1506,7 @@ function soroSettingsHTML() {
   const cols = [3, 5, 7, 9, 13];
   const colors = [
     { id: 'black', vi: 'Đen', en: 'Black', hex: '#111' },
-    { id: 'pink', vi: 'Hồng', en: 'Pink', hex: '#ff5d8f' },
-    { id: 'sun', vi: 'Vàng', en: 'Yellow', hex: '#f0b429' },
-    { id: 'leaf', vi: 'Lá', en: 'Green', hex: '#2f9e6b' },
-    { id: 'sky', vi: 'Trời', en: 'Blue', hex: '#3aa0e8' },
-    { id: 'berry', vi: 'Cam', en: 'Orange', hex: '#f08a3e' }
+    { id: 'white', vi: 'Trắng', en: 'White', hex: '#f7f4ee' }
   ];
   const cur = progress.soroCols || 5;
   const colBtns = cols.map(function (n) {
@@ -1580,14 +1577,14 @@ function render() {
   bindSoroban();
 }
 function earthTop(b, counted) {
-  return (counted ? (34 + b * 10.5) : (90 - (4 - b) * 10.5)) + '%';
+  return (counted ? (33 + b * 11) : (55 + b * 11)) + '%';
 }
 function paintRod(i) {
   const col = document.querySelectorAll('.soro-rod')[i];
   const rod = state.soroban[i];
   if (!col || !rod) return;
   const heaven = col.querySelector('[data-act="soro-heaven"]');
-  if (heaven) heaven.style.top = (rod.heaven ? 16 : 2.5) + '%';
+  if (heaven) heaven.style.top = (rod.heaven ? 16 : 1) + '%';
   const beads = col.querySelectorAll('[data-act="soro-earth"]');
   for (let b = 0; b < beads.length; b++) beads[b].style.top = earthTop(b, b < rod.earth);
   const num = document.querySelector('.soro-num');
@@ -1629,7 +1626,7 @@ function bindSoroban() {
     const rect = col.getBoundingClientRect();
     const dyPct = dy / rect.height * 100;
     if (drag.kind === 'heaven') {
-      const top = Math.max(2.5, Math.min(16, drag.startTop + dyPct));
+      const top = Math.max(1, Math.min(16, drag.startTop + dyPct));
       const el = col.querySelector('[data-act="soro-heaven"]');
       if (el) el.style.top = top + '%';
       const next = top > 9;
@@ -1641,8 +1638,8 @@ function bindSoroban() {
       }
     } else {
       const b = drag.bead;
-      const minTop = 34 + b * 10.5;
-      const maxTop = 90 - (4 - b) * 10.5;
+      const minTop = 33 + b * 11;
+      const maxTop = 55 + b * 11;
       const top = Math.max(minTop, Math.min(maxTop, drag.startTop + dyPct));
       const beads = col.querySelectorAll('[data-act="soro-earth"]');
       if (beads[b]) beads[b].style.top = top + '%';
@@ -1946,7 +1943,7 @@ function onClick(e) {
     return;
   }
   if (act === 'soro-color') {
-    progress.soroColor = el.dataset.id || 'black';
+    progress.soroColor = el.dataset.id === 'white' ? 'white' : 'black';
     save();
     render();
     return;
