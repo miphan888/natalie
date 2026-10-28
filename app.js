@@ -1072,7 +1072,7 @@ function topHTML() {
     '<button type="button" class="pill ' + (lang === 'vi' ? 'on' : '') + '" data-act="lang" data-lang="vi">VI</button>' +
     '<button type="button" data-act="sound" class="' + (progress.sound ? 'on' : '') + '">' + ui('sound') + '</button>' +
     '<button type="button" data-act="read" class="' + (progress.read ? 'on' : '') + '">' + ui('read') + '</button>' +
-    '<button type="button" data-act="wood-toggle">' + (lang === 'vi' ? 'Bàn gỗ' : 'Wood frame') + '</button>' +
+    '<button type="button" data-act="wood-toggle">Soroban</button>' +
     '<button type="button" data-act="full">' + (lang === 'vi' ? 'Cả màn hình' : 'Full screen') + '</button>' +
     '<span class="jar"><i class="dotberry"></i>' + (progress.fruit || 0) + '</span></div></header>';
 }
@@ -1980,7 +1980,7 @@ function woodHTML() {
     }
     return '<div class="wood-rod">' + beads + '<div class="wood-beam" style="top:' + m.beamTop + 'px">' + dot + '</div></div>';
   }).join('');
-  return '<div class="wood-win" role="dialog" aria-label="wood abacus"><section class="wood-board">' +
+  return '<div class="wood-win" role="dialog" aria-label="soroban"><section class="wood-board">' +
     '<i class="wood-brass tl"></i><i class="wood-brass tr"></i><i class="wood-brass bl"></i><i class="wood-brass br"></i>' +
     '<button type="button" class="wood-x" data-act="wood-toggle" aria-label="' + (vi ? 'Đóng' : 'Close') + '">×</button>' +
     '<span class="wood-num">' + woodValue().toLocaleString(vi ? 'vi-VN' : 'en-US') + '</span>' +
