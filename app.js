@@ -1,6 +1,6 @@
-/* Berry Ten / Vườn Số Mười
-   Independent 1st-grade practice for Greg Tang-style break-apart math.
-   Not an official Greg Tang Math product. */
+/* Berry Ten / Number Garden
+   Practice for break-apart addition and subtraction.
+   The guide is one language at a time. */
 'use strict';
 
 const METHODS = [
@@ -28,7 +28,7 @@ const METHODS = [
       { en: 'One more than a double.', vi: 'Hơn số đôi một.' },
       { en: 'One less than a double.', vi: 'Kém số đôi một.' }
     ] },
-  { id: 'maketen', order: 4, en: 'Make a Ten', vi: 'Làm thành 10', school: 'make a ten · funny numbers', color: '#1f8a56', ink: '#fff', tag: { en: 'Core', vi: 'Gốc' },
+  { id: 'maketen', order: 4, en: 'Make a Ten', vi: 'Làm thành 10', school: 'make a ten · break apart', color: '#1f8a56', ink: '#fff', tag: { en: 'Core', vi: 'Gốc' },
     kid: { en: 'Break a number to make 10.', vi: 'Tách số để thành 10.' },
     levels: [
       { en: 'Plus 9. We fill the 1.', vi: 'Cộng 9. Ô “1” đã điền.' },
@@ -52,7 +52,7 @@ const METHODS = [
       { en: 'You fill every box.', vi: 'Con điền mọi ô.' },
       { en: 'Same boxes. Less talk.', vi: 'Vẫn các ô đó. Ít lời hơn.' }
     ] },
-  { id: 'friendly', order: 7, en: 'Friendly Fix', vi: 'Số thân thiện', school: 'compensation · funny numbers', color: '#d4537e', ink: '#fff',
+  { id: 'friendly', order: 7, en: 'Friendly Fix', vi: 'Số thân thiện', school: 'compensation · friendly numbers', color: '#d4537e', ink: '#fff',
     kid: { en: 'Make 10, then give some back.', vi: 'Làm thành 10, rồi trả lại.' },
     levels: [
       { en: 'Plus 9. We show the 1.', vi: 'Cộng 9. Đã chỉ số 1.' },
@@ -86,7 +86,7 @@ const SIT = {
   bonds: { en: 'Ten is the friend every other strategy leans on.', vi: 'Số 10 là bạn mà mọi cách tính sau này đều dựa vào.' },
   counton: { en: 'Only hop 1, 2, or 3. Start at the bigger number.', vi: 'Chỉ nhảy 1, 2 hoặc 3. Bắt đầu từ số lớn hơn.' },
   doubles: { en: 'If you know 6+6, you know 6+7 and 7+6.', vi: 'Biết 6+6 thì biết luôn 6+7 và 7+6.' },
-  maketen: { en: 'Break the other number so this one can become 10. Greg Tang calls that rewrite a funny number.', vi: 'Tách số kia để số này thành 10. Thầy Tang gọi cách viết lại đó là funny number.' },
+  maketen: { en: 'Break the other number so this one can become 10. The two parts are just a friendlier way to write the same number.', vi: 'Tách số kia để số này thành 10. Hai phần đó chỉ là cách viết lại cho dễ, vẫn là số cũ.' },
   taketen: { en: 'Do not take from the ones if they are too small. Take the ones first so you land on 10.', vi: 'Đừng lấy từ phần đơn vị nếu đơn vị nhỏ hơn. Lấy hết đơn vị trước để chạm 10.' },
   think: { en: 'Subtraction asks: what do I add to get there?', vi: 'Phép trừ hỏi: cộng thêm bao nhiêu thì tới?' },
   friendly: { en: 'Add 10, then give back what you added extra. For minus 9, you took 1 too many, so give it back.', vi: 'Cộng 10, rồi trả lại phần cộng thừa. Trừ 9 là lấy thừa 1, phải trả lại.' },
@@ -152,7 +152,7 @@ const LEVEL_NAME = [
 const BOOK_IDS = ['how', 'bonds', 'counton', 'doubles', 'maketen', 'taketen', 'think', 'friendly', 'place', 'choose'];
 
 let progress = {
-  name: '', lang: 'vi', sound: true, read: true, sit: false,
+  name: '', lang: 'en', sound: true, read: true, sit: false,
   stars: {}, fruit: 0, readCh: {}, quiz: {}, unlockAll: false, sawHow: false, daily: {},
   soroCols: 5, soroColor: 'black'
 };
@@ -810,6 +810,12 @@ function load() {
     save();
   }
   if ([3, 5, 7, 9, 13].indexOf(Number(progress.soroCols)) < 0) progress.soroCols = 5;
+  if (progress.langDefault !== 'en') {
+    progress.lang = 'en';
+    progress.langDefault = 'en';
+    save();
+  }
+  if (progress.lang !== 'vi') progress.lang = 'en';
 }
 function unlocked(method, level) {
   if (progress.unlockAll) return true;
@@ -875,13 +881,32 @@ function speak(text, lang) {
 
 function bothHTML(obj) {
   if (!obj) return '';
-  const pri = progress.lang;
-  const sec = pri === 'vi' ? 'en' : 'vi';
-  return '<div class="both"><p>' + esc(obj[pri]) + '</p><p class="sec">' + esc(obj[sec]) + '</p></div>';
+  return '<div class="both"><p>' + esc(t(obj)) + '</p></div>';
 }
 function speakers(obj) {
   if (!obj) return '';
-  return '<span class="spks"><button type="button" class="spk" data-act="speak" data-lang="vi" data-text="' + esc(obj.vi) + '">Nghe</button><button type="button" class="spk" data-act="speak" data-lang="en" data-text="' + esc(obj.en) + '">Hear</button></span>';
+  const lang = progress.lang === 'vi' ? 'vi' : 'en';
+  const label = lang === 'vi' ? 'Nghe' : 'Hear';
+  return '<span class="spks"><button type="button" class="spk" data-act="speak" data-lang="' + lang + '" data-text="' + esc(obj[lang] || obj.en || '') + '">' + label + '</button></span>';
+}
+function schoolOf(m) {
+  if (!m) return '';
+  const vi = {
+    bonds: 'bạn của 10',
+    counton: 'đếm tiếp',
+    doubles: 'số đôi · gần đôi',
+    maketen: 'làm thành 10 · tách số',
+    taketen: 'tách số để trừ',
+    think: 'nghĩ phép cộng',
+    friendly: 'bù số cho dễ',
+    place: 'tách chục và đơn vị',
+    mix: 'chọn một cách',
+    daily: 'một vòng ngắn'
+  };
+  if (progress.lang === 'vi') return vi[m.id] || '';
+  if (m.id === 'maketen') return 'make a ten · break apart';
+  if (m.id === 'friendly') return 'compensation · friendly numbers';
+  return m.school || '';
 }
 
 function heartLogo() {
@@ -1031,7 +1056,7 @@ function cardInner(p, mode) {
   mode.problem = p;
   const entries = mode.solved ? {} : state.entries;
   const m = meta(p.method);
-  const chip = '<div class="chip" style="background:' + m.color + ';color:' + m.ink + '"><b>' + esc(t(m)) + '</b><small>' + esc(m.school || '') + '</small></div>';
+  const chip = '<div class="chip" style="background:' + m.color + ';color:' + m.ink + '"><b>' + esc(t(m)) + '</b><small>' + esc(schoolOf(m)) + '</small></div>';
   const story = p.story ? '<p class="story">' + esc(t(p.story)) + '</p>' : '';
   const rows = p.rows.map(r => rowHTML(r, entries, mode)).join('');
   return chip + story + visualHTML(p.visual) + '<div class="headline">' + esc(p.headline) + '</div>' + rows;
@@ -1041,8 +1066,8 @@ function topHTML() {
   const lang = progress.lang;
   return '<header class="top"><button class="brand" data-act="home" type="button" aria-label="home">' + heartLogo() + '</button><div class="tools">' +
     '<input class="namein" id="player-name" maxlength="16" placeholder="' + (lang === 'vi' ? 'Tên con' : 'Name') + '" value="' + esc(progress.name) + '" aria-label="name">' +
-    '<button type="button" class="pill ' + (lang === 'vi' ? 'on' : '') + '" data-act="lang" data-lang="vi">VI</button>' +
     '<button type="button" class="pill ' + (lang === 'en' ? 'on' : '') + '" data-act="lang" data-lang="en">EN</button>' +
+    '<button type="button" class="pill ' + (lang === 'vi' ? 'on' : '') + '" data-act="lang" data-lang="vi">VI</button>' +
     '<button type="button" data-act="sound" class="' + (progress.sound ? 'on' : '') + '">' + ui('sound') + '</button>' +
     '<button type="button" data-act="read" class="' + (progress.read ? 'on' : '') + '">' + ui('read') + '</button>' +
     '<button type="button" data-act="full">' + (lang === 'vi' ? 'Cả màn hình' : 'Full screen') + '</button>' +
@@ -1073,7 +1098,7 @@ function renderHome() {
     const ribbon = m.id === 'bonds' ? '<span class="ribbon">' + esc(ui('startHere')) + '</span>' : '';
     const tag = m.tag ? '<span class="tag">' + esc(t(m.tag)) + '</span>' : '';
     return '<button type="button" class="bed" style="--c:' + m.color + '" data-act="bed" data-method="' + m.id + '">' + bedArt(m.id) + ribbon +
-      '<span class="bedcopy"><span class="num">' + m.order + '</span> <span class="nm">' + esc(t(m)) + '</span><span class="en">' + esc(m.en) + '</span>' +
+      '<span class="bedcopy"><span class="num">' + m.order + '</span> <span class="nm">' + esc(t(m)) + '</span>' +
       '<div class="stars">' + starStr(Math.min(3, Math.ceil(n / 4))) + '</div>' + tag + '</span></button>';
   }).join('');
   const done = progress.daily[dateKey()];
@@ -1123,7 +1148,7 @@ function renderIntro() {
   return '<div class="wrap">' + topHTML() +
     '<div class="playtop"><button type="button" class="pill" data-act="home">' + esc(ui('garden')) + '</button></div>' +
     '<article class="panel"><div class="introhead">' + heartLogo() +
-    '<div><h2 style="font-family:Georgia,serif;margin:0 0 4px">' + esc(t(m)) + '</h2><p class="en" style="color:#5c564e;font-weight:800;margin:0">' + esc(m.en) + ' · ' + esc(m.school) + '</p></div></div>' +
+    '<div><h2 style="font-family:Georgia,serif;margin:0 0 4px">' + esc(t(m)) + '</h2><p class="en" style="color:#5c564e;font-weight:800;margin:0">' + esc(schoolOf(m)) + '</p></div></div>' +
     bothHTML(m.kid) + speakers(m.kid) +
     '<div class="hintrow"><button type="button" class="textbtn sun" data-act="demo" data-method="' + m.id + '">' + esc(ui('watch')) + '</button><span class="cap" style="max-width:none">' + esc(ui('about')) + '</span></div>' +
     '<div class="levels">' + levels + '</div>' +
@@ -1222,19 +1247,19 @@ function renderClear() {
 
 const BOOK = {
   how: {
-    title: bi('How Greg Tang thinks', 'Cách thầy Greg Tang nghĩ'),
-    school: 'make a ten · break apart · funny numbers · doubles · count on',
+    title: bi('How these ways work', 'Các cách tính này hoạt động thế nào'),
+    school: bi('make a ten · break apart · doubles · count on', 'làm thành 10 · tách số · số đôi · đếm tiếp'),
     paras: [
-      bi('Greg Tang does not want a child to count every finger once a problem is bigger than +1, +2, or +3. The brain should see a group, know 10, and break a number into easier parts.',
-        'Thầy Greg Tang không muốn trẻ đếm từng ngón tay khi phép tính lớn hơn cộng 1, 2 hoặc 3. Não phải thấy một nhóm, thuộc số 10, và tách số thành phần dễ hơn.'),
-      bi('He calls that rewrite “funny numbers.” A 6 written as 2 and 4 looks funny, but 8 needs that 2 to become 10. A 9 written as 10 minus 1 is the same idea.',
-        'Ông gọi cách viết lại đó là “funny numbers.” Số 6 viết thành 2 và 4 trông lạ, nhưng 8 cần đúng số 2 đó để thành 10. Số 9 viết thành 10 trừ 1 cũng là ý đó.'),
-      bi('In a US 1st-grade class the teacher will say the English names: make a ten, break apart, doubles, near doubles, count on, think addition, compensation. This book is those words, in Vietnamese, with the sentence to say while you sit beside your child.',
-        'Ở lớp 1 bên Mỹ, cô sẽ nói đúng các từ tiếng Anh: make a ten, break apart, doubles, near doubles, count on, think addition, compensation. Sách này giải thích từng từ, kèm câu nói khi ngồi cạnh con.'),
+      bi('These are collected classroom ways, not one person’s invention. Once a problem is bigger than +1, +2, or +3, stop counting every finger. See a group, know 10, and break a number into easier parts.',
+        'Đây là các cách tính gom từ lớp học, không phải phát minh của một người. Khi phép tính lớn hơn cộng 1, 2 hoặc 3, đừng đếm từng ngón. Hãy thấy một nhóm, thuộc số 10, và tách số thành phần dễ hơn.'),
+      bi('A rewrite is the same number written in friendlier parts. A 6 written as 2 and 4 still is 6, and 8 needs that 2 to become 10. A 9 written as 10 minus 1 is the same idea.',
+        'Viết lại là cùng một số, chỉ tách thành phần dễ hơn. Số 6 viết thành 2 và 4 vẫn là 6, và 8 cần đúng số 2 đó để thành 10. Số 9 viết thành 10 trừ 1 cũng là ý đó.'),
+      bi('The names in this book are the usual classroom names: make a ten, break apart, doubles, near doubles, count on, think addition, compensation. Each page is the idea, then the sentence to say while you sit beside your child.',
+        'Tên trong sách này là tên thường dùng ở lớp: làm thành 10, tách số, số đôi, gần đôi, đếm tiếp, nghĩ phép cộng, bù số. Mỗi trang là ý chính, rồi câu nói khi ngồi cạnh con.'),
       bi('One garden bed a day, about 6 cards, is enough. Do not finish the whole garden in one night.',
         'Mỗi ngày một luống, khoảng 6 thẻ, là đủ. Đừng làm hết vườn trong một tối.'),
-      bi('If the computer will not read Vietnamese, add the Vietnamese speech language in Windows settings. The Hear / Nghe buttons read either line.',
-        'Nếu máy không đọc tiếng Việt, hãy thêm gói giọng nói tiếng Việt trong cài đặt Windows. Nút Nghe / Hear đọc từng dòng.')
+      bi('The Hear button reads the line in the language you have selected. If speech is silent, add that language in the device settings.',
+        'Nút Nghe đọc đúng ngôn ngữ đang chọn. Nếu máy không đọc, hãy thêm gói giọng nói đó trong cài đặt máy.')
     ]
   },
   bonds: {
@@ -1265,9 +1290,9 @@ const BOOK = {
       'Lấy nhầm số đôi rồi quên cộng 1 hoặc trừ 1. Nói rõ đang dùng số đôi nào, rồi mới bù.')
   },
   maketen: {
-    school: 'make a ten · break apart · funny numbers',
-    idea: bi('This is the 1st-grade heart of Greg Tang’s addition. 8 + 5. Eight needs 2. Break 5 into 2 and 3. 8 + 2 = 10, and 10 + 3 = 13. The 2 and 3 are the funny numbers: 5 written in a friendlier way.',
-      'Đây là trái tim phép cộng lớp 1 của thầy Tang. 8 + 5. Số 8 cần 2. Tách 5 thành 2 và 3. 8 + 2 = 10, rồi 10 + 3 = 13. Số 2 và 3 là funny numbers: số 5 được viết lại cho dễ.'),
+    school: bi('make a ten · break apart', 'làm thành 10 · tách số'),
+    idea: bi('8 + 5. Eight needs 2. Break 5 into 2 and 3. 8 + 2 = 10, and 10 + 3 = 13. The 2 and 3 are the same 5, written in a friendlier way.',
+      '8 + 5. Số 8 cần 2. Tách 5 thành 2 và 3. 8 + 2 = 10, rồi 10 + 3 = 13. Số 2 và 3 vẫn là số 5, chỉ viết lại cho dễ.'),
     say: bi('8 is almost 10. 8 needs 2. Take 2 from the 5. 5 is 2 and 3. 8 plus 2 is 10. 10 plus 3 is 13.',
       '8 sắp thành 10. 8 cần 2. Tách 2 từ số 5. 5 là 2 và 3. 8 cộng 2 là 10. 10 cộng 3 là 13.'),
     watch: bi('Breaking 5 into 1 and 4 because it “looks even.” The first box is not any split. It is the exact amount that finishes the ten.',
@@ -1292,7 +1317,7 @@ const BOOK = {
       'Đếm lùi từ 13 rồi lạc. Hãy hỏi câu phép cộng trước, lần nào cũng vậy.')
   },
   friendly: {
-    school: 'compensation · friendly numbers · funny numbers',
+    school: bi('compensation · friendly numbers', 'bù số cho dễ'),
     idea: bi('9 + 6. Nine is one away from 10. Add 10 first: 16. You added 1 too many, so give it back: 15. For 15 − 9, take 10 first and get 5, but you took 1 too many, so give it back: 6. The sign flips. That flip is the part to say out loud.',
       '9 + 6. Số 9 cách 10 đúng một. Cộng 10 trước được 16. Cộng thừa 1, trả lại: 15. Với 15 − 9, lấy 10 trước còn 5, nhưng lấy thừa 1, phải trả lại: 6. Dấu bị đảo. Chỗ đảo dấu là chỗ phải nói to.'),
     say: bi('Add 10 first, then give 1 back. If you subtracted 10 instead of 9, you took too much — give 1 back.',
@@ -1311,7 +1336,7 @@ const BOOK = {
   },
   choose: {
     title: bi('Which way?', 'Chọn cách nào?'),
-    school: 'strategy choice',
+    school: bi('strategy choice', 'chọn cách tính'),
     paras: [
       bi('There is more than one smart way. If the parts are right, celebrate it. The goal is a flexible child, not obedience to one method.',
         'Có nhiều cách thông minh. Nếu các phần đúng, hãy khen. Mục tiêu là trẻ linh hoạt, không phải tuân một cách duy nhất.')
@@ -1382,14 +1407,13 @@ function renderParents() {
 function renderChapter(id) {
   const ch = BOOK[id];
   const title = chapterTitle(id);
-  const school = ch.school || (meta(id).school || '');
+  const school = METHODS.some(function (m) { return m.id === id; }) ? schoolOf(meta(id)) : t(ch.school || '');
   let body = '<article class="chapter panel"><h2>' + esc(t(title)) + '</h2><div class="school">' + esc(school) + '</div>';
   const paras = ch.paras || (ch.idea ? [ch.idea] : []);
   paras.forEach(p => { body += '<div class="idea">' + bothHTML(p) + '</div>'; });
   if (id === 'how') {
-    body += '<div class="gloss"><b>English</b><b>Tiếng Việt</b><i>School words</i></div>';
     METHODS.forEach(m => {
-      body += '<div class="gloss"><b>' + esc(m.en) + '</b><span>' + esc(m.vi) + '</span><i>' + esc(m.school) + '</i></div>';
+      body += '<div class="idea"><b>' + esc(t(m)) + '</b><p>' + esc(schoolOf(m)) + '</p></div>';
     });
   }
   if (ch.say) body += '<div class="say"><h3>' + esc(ui('say')) + '</h3>' + bothHTML(ch.say) + speakers(ch.say) + '</div>';
@@ -1546,8 +1570,12 @@ function soroHelpHTML() {
     ['Cộng, qua hàng chục — bạn của 10', '+1 = +10 − 9. +2 = +10 − 8. Cứ thế đến +9 = +10 − 1. Cộng ở cột bên trái, trừ lại ở cột này.', '9 + 1: cột đơn vị đang là 9. Sang cột chục đẩy 1 hạt dưới (cộng 10). Ở cột đơn vị kéo hết hạt ra (trừ 9). Còn 10.'],
     ['Trừ, khi còn hạt để kéo', 'Kéo hạt ra khỏi thanh giữa.', '8 − 3: 8 là hạt trên và 3 hạt dưới. Kéo 3 hạt dưới ra. Còn hạt trên, là 5.'],
     ['Trừ, không đủ hạt — làm ngược', '−1 = −5 + 4. −2 = −5 + 3. −3 = −5 + 2. −4 = −5 + 1. Nếu phải mượn hàng chục: −1 = −10 + 9, −5 = −10 + 5.', '5 − 3: chỉ có hạt trên. Kéo hạt trên ra (trừ 5), đẩy 2 hạt dưới vào (cộng 2). Còn 2. Đúng, vì 5 − 3 = 2.'],
-    ['Nhân', 'Tách số rồi nhân từng phần. Hoặc cộng số đó nhiều lần.', '12 × 3: 10 × 3 = 30, 2 × 3 = 6. Đặt 3 hạt dưới ở cột chục (30), rồi cộng 6 ở cột đơn vị. Thành 36. Cách khác: cộng 12 + 12 + 12.'],
-    ['Chia', 'Hỏi số kia cộng mấy lần thì ra số đầu. Trừ đi từng lần và đếm.', '12 ÷ 3: từ 12 trừ 3 được 9, trừ 3 được 6, trừ 3 được 3, trừ 3 được 0. Bốn lần. Vậy 12 ÷ 3 = 4.']
+    ['Nhân một chữ số', 'Nhân từng hàng. Hàng chục nhân trước, hàng đơn vị nhân sau. Nếu một hàng ra từ 10 trở lên, phần chục sang cột bên trái, phần đơn vị ở lại cột này.', '6 × 7 = 42. Cột đang nhân đặt 2. Cột bên trái thêm 4. Không nhét 42 vào một cột.'],
+    ['Nhân nhiều chữ số', 'Tách số sau thành chục và đơn vị. Nhân từng phần, rồi cộng các tích lại. Làm từ trái sang phải.', '12 × 13. 12 × 10 = 120: đặt 1 ở cột trăm, 2 ở cột chục. 12 × 3 = 36: cộng 3 vào cột chục và 6 vào cột đơn vị. 120 + 36 = 156.'],
+    ['Nhân, khi một cột không đủ hạt', 'Tích riêng vẫn dùng bạn của 5 và bạn của 10. Không đoán. Đặt phần chục sang cột trái, phần còn lại ở cột này.', '4 × 4 = 16. Cột này không đủ 6 hạt dưới nếu đã có hạt khác. Đặt 1 ở cột trái, rồi đặt 6 ở cột này, hoặc cộng 16 vào số đang có.'],
+    ['Chia, lấy từng hàng', 'Nhìn từ trái. Hỏi số chia vừa mấy lần trong các chữ số đầu. Đặt thương ở cột đó, rồi trừ tích đi. Chữ số tiếp theo hạ xuống và làm lại.', '84 ÷ 4. 4 vừa 8 đúng 2 lần: đặt 2 ở cột chục, trừ 8. Còn 4 ở cột đơn vị. 4 vừa 4 đúng 1 lần: đặt 1, trừ 4. Thương là 21, dư 0.'],
+    ['Chia, khi chữ số đầu nhỏ hơn', 'Nếu chữ số đầu nhỏ hơn số chia, lấy hai chữ số cùng lúc. Thương bắt đầu ở cột của chữ số thứ hai, không đặt 0 nhầm cột.', '14 ÷ 4. Số 1 nhỏ hơn 4, nên xét 14. 4 × 3 = 12. Đặt 3 ở cột đơn vị, trừ 12. Còn 2. Thương 3, dư 2.'],
+    ['Chia có dư', 'Dư là hạt còn lại sau khi không trừ thêm một lần nữa mà vẫn không âm. Dư phải nhỏ hơn số chia.', '20 ÷ 6. 6 × 3 = 18. Đặt 3, trừ 18. Còn 2. 2 < 6, nên dừng. Thương 3, dư 2.']
   ] : [
     ['Read a number', 'Only beads touching the middle bar count. The top bead against the bar is 5. Each bottom bead against the bar is 1. The right column is ones, then tens, then hundreds.', 'Example: top bead and 2 bottom beads touching the bar in the ones column is 5 + 2 = 7.'],
     ['Add, when beads are free', 'Slide more beads to the bar.', '2 + 1: set 2 bottom beads. Slide 1 more up. That is 3.'],
@@ -1555,8 +1583,12 @@ function soroHelpHTML() {
     ['Add, across a ten — friends of 10', '+1 = +10 − 9, up to +9 = +10 − 1. Add on the column to the left, then take the extra off this column.', '9 + 1: ones shows 9. On the tens column slide 1 bottom bead up (add 10). Clear the ones column (subtract 9). Left with 10.'],
     ['Subtract, when beads are there', 'Slide beads away from the bar.', '8 − 3: 8 is the top bead plus 3 bottom beads. Slide those 3 away. The top bead remains: 5.'],
     ['Subtract, not enough beads — go backwards', '−1 = −5 + 4. −3 = −5 + 2. Across a ten: −5 = −10 + 5.', '5 − 3: only the top bead is set. Slide it away (subtract 5), then slide 2 bottom beads in (add 2). Left with 2.'],
-    ['Multiply', 'Break the number, multiply each part, then add. Or add the number again and again.', '12 × 3: 10 × 3 = 30 and 2 × 3 = 6. Set 3 bottom beads on the tens column, then add 6 on the ones. That is 36. Or add 12 three times.'],
-    ['Divide', 'Ask how many times the small number fits. Subtract it and count.', '12 ÷ 3: 12 − 3 = 9, − 3 = 6, − 3 = 3, − 3 = 0. Four times. So 12 ÷ 3 = 4.']
+    ['Multiply by one digit', 'Multiply one place at a time. Tens first, then ones. If a place is 10 or more, the tens go on the column to the left and the ones stay here.', '6 × 7 = 42. Set 2 on the column you are multiplying. Add 4 on the column to its left. Do not try to put 42 on one rod.'],
+    ['Multiply larger numbers', 'Split the second number into tens and ones. Multiply each part, then add the products. Work from the left.', '12 × 13. 12 × 10 = 120: set 1 on the hundreds rod and 2 on the tens rod. 12 × 3 = 36: add 3 on the tens rod and 6 on the ones rod. 120 + 36 = 156.'],
+    ['Multiply when a rod is full', 'A partial product still uses the friends of 5 and the friends of 10. Do not guess. Put the tens on the left rod and the rest on this rod.', '4 × 4 = 16. This rod may not have 6 free bottom beads. Set 1 on the rod to the left, then set 6 here, or add 16 onto the number already showing.'],
+    ['Divide, one place at a time', 'Start at the left. Ask how many times the divisor fits in the first digits. Set that quotient on that column, then subtract the product. Bring down the next digit and repeat.', '84 ÷ 4. 4 fits in 8 exactly 2 times: set 2 on the tens rod and subtract 8. The ones digit 4 remains. 4 fits in 4 once: set 1 and subtract 4. Quotient 21, remainder 0.'],
+    ['Divide when the first digit is too small', 'If the first digit is smaller than the divisor, take the first two digits together. The quotient starts on the column of the second digit. Do not put a 0 on the wrong rod.', '14 ÷ 4. 1 is smaller than 4, so use 14. 4 × 3 = 12. Set 3 on the ones rod and subtract 12. 2 remains. Quotient 3, remainder 2.'],
+    ['Divide with a remainder', 'The remainder is what is left when you cannot subtract another full divisor without going below 0. It must be smaller than the divisor.', '20 ÷ 6. 6 × 3 = 18. Set 3 and subtract 18. 2 remains. 2 is smaller than 6, so stop. Quotient 3, remainder 2.']
   ];
   const body = blocks.map(function (b) {
     return '<h3>' + esc(b[0]) + '</h3><p>' + esc(b[1]) + '</p><p class="ex">' + esc(b[2]) + '</p>';
