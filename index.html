@@ -20,7 +20,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  html { background: #7ecbff; min-height: 100%; }
+  html { background: #7ecbff var(--garden-bg, url("scene.svg")) center / cover no-repeat fixed; min-height: 100%; }
   body {
     min-height: 100vh;
     color: var(--ink);
@@ -33,7 +33,7 @@
       linear-gradient(#9fd8f5 0 34%, #d7f3c4 34% 100%);
   }
   body.screen-parents, body.screen-chapter { background: #f3eadc; }
-  body.screen-clear { background: #7ecbff url("scene.svg") center / cover no-repeat fixed; }
+  body.screen-clear { background: transparent; }
   button, input { font: inherit; color: inherit; }
   button { cursor: pointer; touch-action: manipulation; }
   button:active { transform: translate(2px, 2px); }
@@ -432,9 +432,9 @@
     min-height: 100dvh;
     color: #4a2d5c;
     font-family: "Comic Sans MS", "Trebuchet MS", "Segoe UI", sans-serif;
-    background: #7ecbff url("scene.svg") center / cover no-repeat fixed;
+    background: transparent;
   }
-  body.screen-parents { background: #fff6ee url("scene.svg") center / cover no-repeat fixed; }
+  body.screen-parents { background: transparent; }
   body.screen-parents #app { background: rgba(255, 248, 242, .9); min-height: 100dvh; }
   body > .cloud, .skyworld { display: none !important; }
   .skyworld { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
@@ -951,6 +951,13 @@
     border-radius: 50%; background: #d4a24a; box-shadow: 0 0 0 1px #6a4018;
   }
 </style>
+<script>
+(function () {
+  var pics = ["bg-meadow.svg", "bg-rainbow.svg", "bg-ocean.svg", "bg-picnic.svg", "bg-candy.svg"];
+  var pick = pics[Math.floor(Math.random() * pics.length)];
+  document.documentElement.style.setProperty("--garden-bg", "url(\"" + pick + "\")");
+})();
+</script>
 </head>
 <body>
 <div class="skyworld" aria-hidden="true">
@@ -967,6 +974,6 @@
 <div class="cloud c4"></div>
 <div id="app"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">This garden needs JavaScript. / Vườn này cần JavaScript.</p></noscript>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=19"></script>
 </body>
 </html>
