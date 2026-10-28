@@ -865,12 +865,13 @@ function chime() {
 function stopSpeak() {
   try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}
 }
-function speak(text, lang, rate) {
+function speak(text, lang, rate, pitch) {
   if (typeof speechSynthesis === 'undefined' || !text) return;
   stopSpeak();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang === 'vi' ? 'vi-VN' : 'en-US';
   u.rate = rate || 0.92;
+  u.pitch = pitch || 1;
   try {
     const voices = speechSynthesis.getVoices();
     const want = lang === 'vi' ? 'vi' : 'en';
@@ -1599,29 +1600,61 @@ function soroHelpHTML() {
   return '<aside class="soro-help"><h2>' + (vi ? 'Cách dùng bàn tính' : 'How to use the abacus') + '</h2>' + body +
     '<button type="button" class="textbtn" data-act="soro-help">' + (vi ? 'Đóng hướng dẫn' : 'Close help') + '</button></aside>';
 }
-function startTen(reset) {
-  const need = Math.floor(Math.random() * 11);
-  const friend = 10 - need;
+let tenTimer = 0;
+function tenLater(fn, ms) {
+  clearTimeout(tenTimer);
+  tenTimer = setTimeout(fn, ms);
+}
+function shuffleNums(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+  }
+  return a;
+}
+function bondChoices(friend) {
   const choices = [friend];
-  while (choices.length < 4) {
-    const n = Math.floor(Math.random() * 11);
+  while (choices.length < 3) {
+    const n = 1 + Math.floor(Math.random() * 9);
     if (choices.indexOf(n) < 0) choices.push(n);
   }
-  for (let i = choices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = choices[i];
-    choices[i] = choices[j];
-    choices[j] = tmp;
-  }
+  return shuffleNums(choices);
+}
+function startTen(reset) {
   const prev = state.ten || {};
-  state.ten = {
+  const world = prev.world && prev.world !== 'hub' ? prev.world : 'frame';
+  let need = 1 + Math.floor(Math.random() * 9);
+  if (world === 'feed') need = 2 + Math.floor(Math.random() * 6);
+  const friend = 10 - need;
+  const next = {
+    world: world,
     need: need,
-    choices: choices,
+    friend: friend,
     streak: reset ? 0 : (prev.streak || 0),
     flash: '',
-    picked: null,
-    world: prev.world && prev.world !== 'hub' ? prev.world : 'sky'
+    picked: null
   };
+  if (world === 'frame' || world === 'catch') next.choices = bondChoices(friend);
+  if (world === 'feed') next.given = 0;
+  if (world === 'lock') {
+    let dial = Math.floor(Math.random() * 11);
+    if (dial === friend) dial = (dial + 2) % 11;
+    next.dial = dial;
+  }
+  if (world === 'memory') {
+    const pool = shuffleNums([[0, 10], [1, 9], [2, 8], [3, 7], [4, 6], [5, 5]]).slice(0, 3);
+    const cards = [];
+    pool.forEach(function (p) {
+      cards.push({ n: p[0], up: false, gone: false });
+      cards.push({ n: p[1], up: false, gone: false });
+    });
+    next.cards = shuffleNums(cards);
+    next.open = [];
+    next.pairs = 0;
+  }
+  state.ten = next;
 }
 function tenWords(n) {
   const vi = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín', 'mười'];
@@ -1631,56 +1664,154 @@ function tenWords(n) {
 function tenLine(kind) {
   const g = state.ten || {};
   const vi = progress.lang === 'vi';
+  const name = progress.name || (vi ? 'bạn nhỏ' : 'friend');
   const n = tenWords(g.need);
-  const f = tenWords(10 - g.need);
-  if (kind === 'yes') return vi ? (n + ' cộng ' + f + ' bằng mười.') : (n + ' plus ' + f + ' is ten.');
-  if (kind === 'no') return vi ? 'Chưa phải bạn đó. Nghe lại nhé.' : 'Not that friend. Listen again.';
+  const f = tenWords(g.friend == null ? (10 - g.need) : g.friend);
+  if (kind === 'yes') {
+    const flavor = {
+      frame: vi ? 'Khung mười đầy rồi! ' : 'The ten-frame is full! ',
+      memory: vi ? 'Con nhớ cặp này! ' : 'You remembered the pair! ',
+      feed: vi ? 'Con cho vừa đủ ' + f + '! ' : 'You gave just enough! ',
+      lock: vi ? 'Rương mở rồi! ' : 'The treasure opened! ',
+      catch: vi ? 'Con bắt được bạn! ' : 'You caught the friend! '
+    };
+    const joy = vi
+      ? [name + ' ơi, đúng rồi! ', 'Ồ ' + name + '! ', 'Đẹp quá, ' + name + '! ', 'Hoan hô ' + name + '! ', 'Giỏi lắm, ' + name + '! ']
+      : ['Yes, ' + name + '! ', 'Wow, ' + name + '! ', 'Beautiful, ' + name + '! ', 'Hooray, ' + name + '! ', 'I am so proud, ' + name + '! '];
+    return joy[(g.streak || 1) % 5] + (flavor[g.world] || '') + (vi ? (n + ' và ' + f + ' là bạn. Cộng lại bằng mười!') : (n + ' and ' + f + ' belong together. They make ten!'));
+  }
+  if (kind === 'no') return vi ? 'Chưa phải. Mình thử cách khác nhé.' : 'Not yet. Let us try another way.';
+  if (kind === 'almost') return vi ? 'Gần rồi! Xoay thêm một chút.' : 'So close! Turn a little more.';
   const lead = {
-    sky: vi ? 'Quả số ' + n + ' đang cô đơn. ' : 'Fruit ' + n + ' is lonely. ',
-    pond: vi ? 'Ếch cần một lá. Số ' + n + '. ' : 'The frog needs a pad. ' + n + '. ',
-    bake: vi ? 'Bánh cần một bạn. Số ' + n + '. ' : 'The cookie needs a friend. ' + n + '. ',
-    rocket: vi ? 'Tên lửa cần nhiên liệu. Số ' + n + '. ' : 'The rocket needs fuel. ' + n + '. '
+    frame: vi ? 'Nhìn ô trống. Đám nào lấp đủ mười? ' : 'Look at the empty spots. Which bunch fills the ten? ',
+    memory: vi ? 'Lật hai thẻ. Giữ lại nếu cộng thành mười. ' : 'Flip two cards. Keep them if they make ten. ',
+    feed: vi ? 'Bát có ' + n + '. Cho quả đến khi đủ mười. ' : 'The bowl has ' + n + '. Give berries until there are ten. ',
+    lock: vi ? 'Xoay bánh xe. Hai số phải thành mười. ' : 'Turn the wheel. The two numbers must make ten. ',
+    catch: vi ? 'Chỉ bắt bạn của số ' + n + '. ' : 'Catch only the friend of ' + n + '. '
   };
-  return (lead[g.world] || '') + (vi ? 'Số nào cộng thành mười?' : 'Which number makes ten?');
+  return lead[g.world] || (vi ? 'Số nào cộng thành mười?' : 'Which number makes ten?');
 }
 function sayTen(kind) {
-  if (!progress.read) return;
-  speak(tenLine(kind || 'ask'), progress.lang, 0.82);
+  const k = kind || 'ask';
+  if (k !== 'yes' && !progress.read) return;
+  const excited = k === 'yes';
+  speak(tenLine(k), progress.lang, excited ? 0.96 : 0.88, excited ? 1.16 : 1.04);
+}
+function winTen() {
+  const g = state.ten;
+  if (!g) return;
+  g.flash = 'yes';
+  g.streak = (g.streak || 0) + 1;
+  progress.tenBest = Math.max(progress.tenBest || 0, g.streak);
+  save();
+  if (progress.sound) chime();
+  sayTen('yes');
+  render();
+  tenLater(function () {
+    if (state.screen !== 'tenplay') return;
+    startTen(false);
+    render();
+    sayTen('ask');
+  }, 2200);
 }
 function pickTen(n) {
   const g = state.ten;
-  if (!g) return;
+  if (!g || g.flash === 'yes') return;
   g.picked = n;
-  if (n === 10 - g.need) {
-    g.flash = 'yes';
-    g.streak = (g.streak || 0) + 1;
-    progress.tenBest = Math.max(progress.tenBest || 0, g.streak);
-    save();
-    if (progress.sound) chime();
-    sayTen('yes');
-    render();
-    later(function () {
-      if (state.screen !== 'tenplay') return;
-      startTen(false);
-      render();
-      sayTen('ask');
-    }, 1600);
-  } else {
+  if (n === g.friend || n === 10 - g.need) winTen();
+  else {
     g.flash = 'no';
     if (progress.sound) beep(180, 0.1, 'triangle');
     sayTen('no');
     render();
   }
 }
+function feedTen() {
+  const g = state.ten;
+  if (!g || g.flash === 'yes') return;
+  g.given = (g.given || 0) + 1;
+  if (g.need + g.given >= 10) {
+    g.friend = g.given;
+    winTen();
+    return;
+  }
+  if (progress.sound) beep(480 + g.given * 30, 0.06);
+  render();
+}
+function dialTen(dir) {
+  const g = state.ten;
+  if (!g || g.flash === 'yes') return;
+  g.dial = Math.max(0, Math.min(10, (g.dial || 0) + dir));
+  if (g.need + g.dial === 10) {
+    g.friend = g.dial;
+    winTen();
+    return;
+  }
+  if (Math.abs(g.need + g.dial - 10) === 1) sayTen('almost');
+  if (progress.sound) beep(360 + g.dial * 18, 0.04);
+  render();
+}
+function flipTen(i) {
+  const g = state.ten;
+  if (!g || g.lock || g.flash === 'yes') return;
+  const card = g.cards[i];
+  if (!card || card.up || card.gone) return;
+  card.up = true;
+  g.open = g.open || [];
+  g.open.push(i);
+  if (g.open.length < 2) { render(); return; }
+  const a = g.cards[g.open[0]];
+  const b = g.cards[g.open[1]];
+  if (a.n + b.n === 10) {
+    a.gone = true;
+    b.gone = true;
+    g.need = a.n;
+    g.friend = b.n;
+    g.open = [];
+    g.pairs = (g.pairs || 0) + 1;
+    if (progress.sound) chime();
+    if (g.pairs >= 3) winTen();
+    else {
+      sayTen('yes');
+      render();
+    }
+    return;
+  }
+  g.lock = true;
+  sayTen('no');
+  render();
+  tenLater(function () {
+    if (!state.ten || !state.ten.cards) return;
+    a.up = false;
+    b.up = false;
+    state.ten.open = [];
+    state.ten.lock = false;
+    render();
+  }, 800);
+}
+function berryDots(n) {
+  let s = '';
+  for (let i = 0; i < n; i++) s += '🍓';
+  return s || '·';
+}
+function tenShell(inner, msg, g, vi) {
+  const best = progress.tenBest || 0;
+  return '<div class="wrap">' + topHTML() +
+    '<div class="playtop"><button type="button" class="pill" data-act="ten-hub">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Bạn tìm được ' : 'Friends ') + (g.streak || 0) + (best ? ' · ' + best : '') + '</span>' +
+    '<button type="button" class="pill on" data-act="ten-hear">' + (vi ? 'Nghe lại' : 'Hear again') + '</button></div>' +
+    '<div class="tenworld"><div class="ten-play theme-' + g.world + (g.flash === 'yes' ? ' party' : '') + '">' + inner + '</div>' +
+    '<p class="ten-msg ' + (g.flash || '') + '">' + esc(msg) + '</p></div></div>';
+}
 function renderTen() {
   const g = state.ten || { world: 'hub', need: 7, choices: [], streak: 0, flash: '' };
   const vi = progress.lang === 'vi';
   if (!g.world || g.world === 'hub') {
     const games = [
-      ['sky', '🍓', vi ? 'Vườn quả' : 'Fruit sky', vi ? 'Quả cô đơn tìm bạn.' : 'A lonely fruit wants a friend.'],
-      ['pond', '🐸', vi ? 'Ao ếch' : 'Frog pond', vi ? 'Ếch nhảy lên lá đúng.' : 'The frog hops to the right pad.'],
-      ['bake', '🍪', vi ? 'Tiệm bánh' : 'Cookie shop', vi ? 'Bánh cần bạn phủ lên.' : 'The cookie needs a topping friend.'],
-      ['rocket', '🚀', vi ? 'Tên lửa' : 'Rocket', vi ? 'Đổ đúng nhiên liệu để bay.' : 'Add the fuel that makes ten.']
+      ['frame', '🔟', vi ? 'Khung mười' : 'Ten-frame', vi ? 'Nhìn ô trống, chọn đám quả lấp đầy.' : 'See the empty spots. Pick the bunch that fills them.'],
+      ['memory', '🃏', vi ? 'Lật thẻ' : 'Memory pairs', vi ? 'Lật hai thẻ. Chỉ cặp thành 10 mới ở lại.' : 'Flip two cards. Only pairs that make 10 stay.'],
+      ['feed', '🥣', vi ? 'Cho vào bát' : 'Fill the bowl', vi ? 'Cho từng quả đến khi bát đủ 10.' : 'Give berries one by one until the bowl is 10.'],
+      ['lock', '🔐', vi ? 'Ổ khóa' : 'Treasure lock', vi ? 'Xoay số đến khi khóa mở.' : 'Turn the wheel until the lock opens.'],
+      ['catch', '🦋', vi ? 'Bắt bạn bay' : 'Catch a friend', vi ? 'Chỉ bắt con đang bay đúng số.' : 'Catch only the friend flying by.']
     ];
     const cards = games.map(function (gm) {
       return '<button type="button" class="ten-card" data-act="ten-world" data-w="' + gm[0] + '"><b>' + gm[1] + '</b><strong>' + esc(gm[2]) + '</strong><small>' + esc(gm[3]) + '</small></button>';
@@ -1690,50 +1821,40 @@ function renderTen() {
       '<p class="ten-msg">' + esc(vi ? 'Chọn một trò. Máy sẽ đọc câu hỏi.' : 'Pick a game. The question will be read aloud.') + '</p>' +
       '<div class="ten-hub">' + cards + '</div></div>';
   }
-  const pals = [
-    { e: '⭐', c: '#ffe08a' }, { e: '🍒', c: '#ff6b9a' }, { e: '🍋', c: '#ffe56a' },
-    { e: '🍓', c: '#ff5d8f' }, { e: '🫐', c: '#9b8cff' }, { e: '🍊', c: '#ffb15a' },
-    { e: '🍇', c: '#d0a8ff' }, { e: '🍎', c: '#ff8a8a' }, { e: '🍑', c: '#ffc1ae' },
-    { e: '🥝', c: '#9be58a' }, { e: '🍈', c: '#c8f5a0' }
-  ];
-  const hero = pals[g.need] || pals[0];
-  const marks = { sky: hero.e, pond: '🐸', bake: '🍪', rocket: '🚀' };
-  const heroMark = marks[g.world] || hero.e;
-  const ask = vi
-    ? (hero.e + ' ' + g.need + ' đang cô đơn. Bạn nào cộng thành 10?')
-    : (hero.e + ' ' + g.need + ' is lonely. Who makes 10?');
-  const msg = g.flash === 'yes'
-    ? (vi ? 'Ôi! ' + g.need + ' + ' + (10 - g.need) + ' = 10. Hai bạn ôm nhau!' : 'Yes! ' + g.need + ' + ' + (10 - g.need) + ' = 10. They found each other!')
-    : g.flash === 'no'
-      ? (vi ? 'Chưa phải bạn ấy. Nhìn quả khác xem!' : 'Not that friend. Peek at another fruit!')
-      : ask;
-  const spots = [
-    { x: '-150px', y: '-90px', z: '40px', tilt: '-8deg', d: '0s' },
-    { x: '150px', y: '-50px', z: '90px', tilt: '7deg', d: '.35s' },
-    { x: '-110px', y: '70px', z: '20px', tilt: '6deg', d: '.7s' },
-    { x: '120px', y: '78px', z: '70px', tilt: '-6deg', d: '1s' }
-  ];
-  const orbs = g.choices.map(function (n, i) {
-    const s = spots[i] || spots[0];
-    const pal = pals[n] || pals[1];
-    const mark = g.picked === n ? (n === 10 - g.need ? ' yes' : ' no') : '';
-    return '<button type="button" class="ten-orb' + mark + '" data-act="ten-pick" data-n="' + n + '" style="--x:' + s.x + ';--y:' + s.y + ';--z:' + s.z + ';--tilt:' + s.tilt + ';--c:' + pal.c + ';--d:' + s.d + '"><em>' + pal.e + '</em><b>' + n + '</b></button>';
-  }).join('');
-  let hearts = '';
-  if (g.flash === 'yes') {
-    for (let i = 0; i < 8; i++) hearts += '<i style="left:' + (8 + i * 11) + '%;animation-delay:' + (i * 0.08) + 's">' + (i % 2 ? '💛' : '💗') + '</i>';
+  const msg = g.flash === 'yes' ? tenLine('yes') : (g.flash === 'no' ? tenLine('no') : tenLine('ask'));
+  let inner = '';
+  if (g.world === 'frame') {
+    let cells = '';
+    for (let i = 0; i < 10; i++) cells += '<i class="' + (i < g.need ? 'on' : '') + '">' + (i < g.need ? '🍓' : '') + '</i>';
+    const bunches = (g.choices || []).map(function (n) {
+      const mark = g.picked === n ? (n === g.friend ? ' yes' : ' no') : '';
+      return '<button type="button" class="bunch' + mark + '" data-act="ten-pick" data-n="' + n + '"><span>' + berryDots(n) + '</span><b>' + n + '</b></button>';
+    }).join('');
+    inner = '<div class="tenframe">' + cells + '</div><div class="bunches">' + bunches + '</div>';
+  } else if (g.world === 'memory') {
+    const cards = (g.cards || []).map(function (c, i) {
+      const cls = (c.up || c.gone ? ' up' : '') + (c.gone ? ' gone' : '');
+      return '<button type="button" class="mem' + cls + '" data-act="ten-flip" data-i="' + i + '"><span>' + c.n + '</span></button>';
+    }).join('');
+    inner = '<div class="mems">' + cards + '</div>';
+  } else if (g.world === 'feed') {
+    const total = g.need + (g.given || 0);
+    let bits = '';
+    for (let i = 0; i < 10; i++) bits += '<i class="' + (i < total ? 'on' : '') + '">' + (i < total ? '🍓' : '') + '</i>';
+    inner = '<div class="bowl"><b>' + total + '</b><div class="tenframe">' + bits + '</div></div>' +
+      '<button type="button" class="give" data-act="ten-feed">' + (vi ? 'Cho một quả' : 'Give one berry') + '</button>';
+  } else if (g.world === 'lock') {
+    const sum = g.need + (g.dial || 0);
+    inner = '<div class="chest">' + (g.flash === 'yes' ? '🎁' : '🔐') + '</div><div class="dial"><b>' + g.need + '</b><span>+</span><b>' + (g.dial || 0) + '</b><span>=</span><b class="' + (sum === 10 ? 'full' : '') + '">' + sum + '</b></div>' +
+      '<div class="dialbtns"><button type="button" data-act="ten-dial" data-dir="-1">−</button><button type="button" data-act="ten-dial" data-dir="1">+</button></div>';
+  } else {
+    const flyers = (g.choices || []).map(function (n, i) {
+      const mark = g.picked === n ? (n === g.friend ? ' yes' : ' no') : '';
+      return '<button type="button" class="flyer' + mark + '" data-act="ten-pick" data-n="' + n + '" style="--d:' + (i * 1.1) + 's;--t:' + (4.2 + i * 0.7) + 's;top:' + (12 + i * 58) + 'px">' + n + '</button>';
+    }).join('');
+    inner = '<div class="catch-hero">' + g.need + '</div><div class="lanes">' + flyers + '</div>';
   }
-  const best = progress.tenBest || 0;
-  return '<div class="wrap">' + topHTML() +
-    '<div class="playtop"><button type="button" class="pill" data-act="ten-hub">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Bạn tìm được ' : 'Friends ') + g.streak + (best ? ' · ' + best : '') + '</span>' +
-    '<button type="button" class="pill on" data-act="ten-hear">' + (vi ? 'Nghe lại' : 'Hear again') + '</button></div>' +
-    '<div class="tenworld"><div class="ten-sky theme-' + g.world + (g.flash === 'yes' ? ' party' : '') + '"><div class="ten-rainbow"></div>' +
-    '<i class="spark" style="left:12%;top:18%">✦</i><i class="spark" style="left:62%;top:12%;animation-delay:.6s">✦</i><i class="spark" style="right:16%;top:28%;animation-delay:1s">✧</i>' +
-    '<i class="butterfly" style="left:10%;top:34%">🦋</i><i class="butterfly" style="right:14%;top:42%;animation-delay:-2s">🦋</i>' +
-    '<div class="ten-island"><i style="left:30px">🌷</i><i style="left:120px">🌼</i><i style="left:200px">🌸</i></div>' +
-    '<div class="hearts">' + hearts + '</div>' +
-    '<div class="ten-hero" style="--c:' + hero.c + '"><span>' + heroMark + '</span><b>' + g.need + '</b></div>' +
-    orbs + '</div><p class="ten-msg ' + (g.flash || '') + '">' + esc(msg) + '</p></div></div>';
+  return tenShell(inner, msg, g, vi);
 }
 function render() {
   if (typeof document === 'undefined') return;
@@ -2252,8 +2373,11 @@ function onClick(e) {
     sayTen('ask');
     return;
   }
-  if (act === 'ten-hear') { sayTen(state.ten && state.ten.flash ? state.ten.flash : 'ask'); return; }
+  if (act === 'ten-hear') { sayTen(state.ten && state.ten.flash === 'yes' ? 'yes' : 'ask'); return; }
   if (act === 'ten-pick') { pickTen(Number(el.dataset.n)); return; }
+  if (act === 'ten-feed') { feedTen(); return; }
+  if (act === 'ten-dial') { dialTen(Number(el.dataset.dir)); return; }
+  if (act === 'ten-flip') { flipTen(Number(el.dataset.i)); return; }
   if (act === 'home') { goHome(); return; }
   if (act === 'intro') { goIntro(); return; }
   if (act === 'back') {
@@ -2427,7 +2551,7 @@ function routeFromHash() {
   if (a === 'ten') {
     state.method = 'bonds';
     state.screen = 'tenplay';
-    if (b && ['sky', 'pond', 'bake', 'rocket'].indexOf(b) >= 0) {
+    if (b && ['frame', 'memory', 'feed', 'lock', 'catch'].indexOf(b) >= 0) {
       state.ten = { world: b, streak: 0 };
       startTen(true);
     } else state.ten = { world: 'hub', streak: 0 };
