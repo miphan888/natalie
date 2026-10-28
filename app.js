@@ -1636,23 +1636,25 @@ function startTen(reset) {
     flash: '',
     picked: null
   };
-  if (world === 'frame' || world === 'catch') next.choices = bondChoices(friend);
-  if (world === 'feed') next.given = 0;
-  if (world === 'lock') {
+  if (world === 'lock' || world === 'potion') {
     let dial = Math.floor(Math.random() * 11);
-    if (dial === friend) dial = (dial + 2) % 11;
+    if (dial === friend) dial = (dial + 3) % 11;
     next.dial = dial;
   }
-  if (world === 'memory') {
-    const pool = shuffleNums([[0, 10], [1, 9], [2, 8], [3, 7], [4, 6], [5, 5]]).slice(0, 3);
-    const cards = [];
-    pool.forEach(function (p) {
-      cards.push({ n: p[0], up: false, gone: false });
-      cards.push({ n: p[1], up: false, gone: false });
-    });
-    next.cards = shuffleNums(cards);
-    next.open = [];
-    next.pairs = 0;
+  if (world === 'grow') {
+    next.left = 0;
+    next.right = 0;
+    progress.tenGarden = progress.tenGarden || [];
+  }
+  if (world === 'judge') {
+    const truth = Math.random() < 0.5;
+    let other = friend;
+    if (!truth) {
+      other = (friend + 1 + Math.floor(Math.random() * 3)) % 11;
+      if (need + other === 10) other = (other + 2) % 11;
+    }
+    next.claim = other;
+    next.claimTrue = need + other === 10;
   }
   state.ten = next;
 }
@@ -1669,25 +1671,36 @@ function tenLine(kind) {
   const f = tenWords(g.friend == null ? (10 - g.need) : g.friend);
   if (kind === 'yes') {
     const flavor = {
-      frame: vi ? 'Khung mười đầy rồi! ' : 'The ten-frame is full! ',
-      memory: vi ? 'Con nhớ cặp này! ' : 'You remembered the pair! ',
-      feed: vi ? 'Con cho vừa đủ ' + f + '! ' : 'You gave just enough! ',
       lock: vi ? 'Rương mở rồi! ' : 'The treasure opened! ',
-      catch: vi ? 'Con bắt được bạn! ' : 'You caught the friend! '
+      grow: vi ? 'Con tự nghĩ ra một cặp mới! ' : 'You invented a new pair! ',
+      judge: g.caughtTrick ? (vi ? 'Con bắt được cáo nói dối! ' : 'You caught the fox! ') : (vi ? 'Con nghe đúng! ' : 'You heard the truth! '),
+      potion: vi ? 'Thuốc biến thành vàng! ' : 'The potion turned to gold! ',
+      bridge: vi ? 'Ếch qua cầu rồi! ' : 'The frog crossed! '
     };
     const joy = vi
       ? [name + ' ơi, đúng rồi! ', 'Ồ ' + name + '! ', 'Đẹp quá, ' + name + '! ', 'Hoan hô ' + name + '! ', 'Giỏi lắm, ' + name + '! ']
       : ['Yes, ' + name + '! ', 'Wow, ' + name + '! ', 'Beautiful, ' + name + '! ', 'Hooray, ' + name + '! ', 'I am so proud, ' + name + '! '];
     return joy[(g.streak || 1) % 5] + (flavor[g.world] || '') + (vi ? (n + ' và ' + f + ' là bạn. Cộng lại bằng mười!') : (n + ' and ' + f + ' belong together. They make ten!'));
   }
-  if (kind === 'no') return vi ? 'Chưa phải. Mình thử cách khác nhé.' : 'Not yet. Let us try another way.';
+  if (kind === 'no') {
+    const miss = {
+      short: vi ? 'Tấm ván ngắn quá. Ếch rơi tõm!' : 'Too short. The frog fell in!',
+      long: vi ? 'Tấm ván dài quá. Không vừa cầu.' : 'Too long. It will not fit the bridge.',
+      much: vi ? 'Rót nhiều quá. Thuốc sôi trào!' : 'Too much. The potion boiled over!',
+      less: vi ? 'Rót ít quá. Thuốc chưa đủ.' : 'Not enough. The potion is still sleepy.',
+      dup: vi ? 'Cặp này con trồng rồi. Nghĩ một cách khác.' : 'You already grew that pair. Think of a new way.',
+      sum: vi ? 'Hai số này chưa thành mười.' : 'Those two do not make ten yet.',
+      fox: vi ? 'Cáo đang đánh lừa. Nghe lại câu đó.' : 'The fox is tricking you. Listen again.'
+    };
+    return miss[g.hint] || (vi ? 'Chưa phải. Nghĩ lại xem hai số có thành mười không.' : 'Not yet. Think whether the two numbers make ten.');
+  }
   if (kind === 'almost') return vi ? 'Gần rồi! Xoay thêm một chút.' : 'So close! Turn a little more.';
   const lead = {
-    frame: vi ? 'Nhìn ô trống. Đám nào lấp đủ mười? ' : 'Look at the empty spots. Which bunch fills the ten? ',
-    memory: vi ? 'Lật hai thẻ. Giữ lại nếu cộng thành mười. ' : 'Flip two cards. Keep them if they make ten. ',
-    feed: vi ? 'Bát có ' + n + '. Cho quả đến khi đủ mười. ' : 'The bowl has ' + n + '. Give berries until there are ten. ',
     lock: vi ? 'Xoay bánh xe. Hai số phải thành mười. ' : 'Turn the wheel. The two numbers must make ten. ',
-    catch: vi ? 'Chỉ bắt bạn của số ' + n + '. ' : 'Catch only the friend of ' + n + '. '
+    grow: vi ? 'Tự nghĩ hai số cộng thành mười. Trồng một cặp mới. ' : 'Think of two numbers that make ten. Plant a new pair. ',
+    judge: vi ? 'Cáo nói ' + n + ' cộng ' + tenWords(g.claim) + ' bằng mười. Có đúng không? ' : 'The fox says ' + n + ' plus ' + tenWords(g.claim) + ' is ten. Is that true? ',
+    potion: vi ? 'Vạc có ' + n + '. Chọn bạn, rồi mới rót. ' : 'The cauldron has ' + n + '. Choose the friend, then pour. ',
+    bridge: vi ? 'Cầu cần mười tấm. Đã có ' + n + '. Chọn tấm ván vừa khuyết. ' : 'The bridge needs ten planks. ' + n + ' are down. Choose the plank that finishes it. '
   };
   return lead[g.world] || (vi ? 'Số nào cộng thành mười?' : 'Which number makes ten?');
 }
@@ -1726,23 +1739,94 @@ function pickTen(n) {
     render();
   }
 }
-function feedTen() {
+function plantTen() {
   const g = state.ten;
   if (!g || g.flash === 'yes') return;
-  g.given = (g.given || 0) + 1;
-  if (g.need + g.given >= 10) {
-    g.friend = g.given;
-    winTen();
+  const a = g.left || 0;
+  const b = g.right || 0;
+  if (a + b !== 10) {
+    g.flash = 'no';
+    g.hint = 'sum';
+    sayTen('no');
+    render();
     return;
   }
-  if (progress.sound) beep(480 + g.given * 30, 0.06);
-  render();
+  const key = Math.min(a, b) + '-' + Math.max(a, b);
+  progress.tenGarden = progress.tenGarden || [];
+  if (progress.tenGarden.indexOf(key) >= 0) {
+    g.flash = 'no';
+    g.hint = 'dup';
+    sayTen('no');
+    render();
+    return;
+  }
+  progress.tenGarden.push(key);
+  g.need = a;
+  g.friend = b;
+  save();
+  if (progress.tenGarden.length >= 6) winTen();
+  else {
+    g.flash = 'yes';
+    g.streak = (g.streak || 0) + 1;
+    if (progress.sound) chime();
+    sayTen('yes');
+    render();
+    tenLater(function () {
+      if (!state.ten) return;
+      state.ten.flash = '';
+      state.ten.left = 0;
+      state.ten.right = 0;
+      render();
+      sayTen('ask');
+    }, 1800);
+  }
+}
+function judgeTen(yes) {
+  const g = state.ten;
+  if (!g || g.flash === 'yes') return;
+  if (yes === !!g.claimTrue) {
+    g.friend = 10 - g.need;
+    g.caughtTrick = !g.claimTrue;
+    winTen();
+  } else {
+    g.flash = 'no';
+    g.hint = 'fox';
+    sayTen('no');
+    render();
+  }
+}
+function pourTen() {
+  const g = state.ten;
+  if (!g || g.flash === 'yes') return;
+  const n = g.dial || 0;
+  if (n === g.friend) winTen();
+  else {
+    g.flash = 'no';
+    g.hint = n > g.friend ? 'much' : 'less';
+    if (progress.sound) beep(160, 0.12, 'triangle');
+    sayTen('no');
+    render();
+  }
+}
+function plankTen(n) {
+  const g = state.ten;
+  if (!g || g.flash === 'yes') return;
+  g.picked = n;
+  if (n === g.friend) winTen();
+  else {
+    g.flash = 'no';
+    g.hint = n < g.friend ? 'short' : 'long';
+    if (progress.sound) beep(180, 0.1, 'triangle');
+    sayTen('no');
+    render();
+  }
 }
 function dialTen(dir) {
   const g = state.ten;
   if (!g || g.flash === 'yes') return;
   g.dial = Math.max(0, Math.min(10, (g.dial || 0) + dir));
-  if (g.need + g.dial === 10) {
+  g.flash = '';
+  if (g.world !== 'potion' && g.need + g.dial === 10) {
     g.friend = g.dial;
     winTen();
     return;
@@ -1807,11 +1891,11 @@ function renderTen() {
   const vi = progress.lang === 'vi';
   if (!g.world || g.world === 'hub') {
     const games = [
-      ['frame', '🔟', vi ? 'Khung mười' : 'Ten-frame', vi ? 'Nhìn ô trống, chọn đám quả lấp đầy.' : 'See the empty spots. Pick the bunch that fills them.'],
-      ['memory', '🃏', vi ? 'Lật thẻ' : 'Memory pairs', vi ? 'Lật hai thẻ. Chỉ cặp thành 10 mới ở lại.' : 'Flip two cards. Only pairs that make 10 stay.'],
-      ['feed', '🥣', vi ? 'Cho vào bát' : 'Fill the bowl', vi ? 'Cho từng quả đến khi bát đủ 10.' : 'Give berries one by one until the bowl is 10.'],
-      ['lock', '🔐', vi ? 'Ổ khóa' : 'Treasure lock', vi ? 'Xoay số đến khi khóa mở.' : 'Turn the wheel until the lock opens.'],
-      ['catch', '🦋', vi ? 'Bắt bạn bay' : 'Catch a friend', vi ? 'Chỉ bắt con đang bay đúng số.' : 'Catch only the friend flying by.']
+      ['lock', '🔐', vi ? 'Ổ khóa kho báu' : 'Treasure lock', vi ? 'Xoay đến khi hai số thành 10. Khóa tự mở.' : 'Turn until the two numbers make 10. The lock opens itself.'],
+      ['grow', '🌱', vi ? 'Trồng cặp mới' : 'Grow a pair', vi ? 'Tự nghĩ một cặp thành 10. Cặp cũ không tính.' : 'Invent a pair that makes 10. Old pairs do not count.'],
+      ['judge', '🦊', vi ? 'Bắt cáo nói dối' : 'Catch the fox', vi ? 'Nghe câu của cáo. Đúng hay sai?' : 'Hear the fox. True or false?'],
+      ['potion', '🧪', vi ? 'Rót một lần' : 'One pour', vi ? 'Chọn số bạn, rồi mới rót. Rót sai là trào.' : 'Choose the friend, then pour. A wrong pour spills.'],
+      ['bridge', '🐸', vi ? 'Bắc cầu cho ếch' : 'Frog bridge', vi ? 'Chọn tấm ván vừa khuyết. Ngắn thì rơi, dài thì không vừa.' : 'Choose the plank that fits. Too short falls. Too long will not fit.']
     ];
     const cards = games.map(function (gm) {
       return '<button type="button" class="ten-card" data-act="ten-world" data-w="' + gm[0] + '"><b>' + gm[1] + '</b><strong>' + esc(gm[2]) + '</strong><small>' + esc(gm[3]) + '</small></button>';
@@ -1823,36 +1907,30 @@ function renderTen() {
   }
   const msg = g.flash === 'yes' ? tenLine('yes') : (g.flash === 'no' ? tenLine('no') : tenLine('ask'));
   let inner = '';
-  if (g.world === 'frame') {
-    let cells = '';
-    for (let i = 0; i < 10; i++) cells += '<i class="' + (i < g.need ? 'on' : '') + '">' + (i < g.need ? '🍓' : '') + '</i>';
-    const bunches = (g.choices || []).map(function (n) {
-      const mark = g.picked === n ? (n === g.friend ? ' yes' : ' no') : '';
-      return '<button type="button" class="bunch' + mark + '" data-act="ten-pick" data-n="' + n + '"><span>' + berryDots(n) + '</span><b>' + n + '</b></button>';
-    }).join('');
-    inner = '<div class="tenframe">' + cells + '</div><div class="bunches">' + bunches + '</div>';
-  } else if (g.world === 'memory') {
-    const cards = (g.cards || []).map(function (c, i) {
-      const cls = (c.up || c.gone ? ' up' : '') + (c.gone ? ' gone' : '');
-      return '<button type="button" class="mem' + cls + '" data-act="ten-flip" data-i="' + i + '"><span>' + c.n + '</span></button>';
-    }).join('');
-    inner = '<div class="mems">' + cards + '</div>';
-  } else if (g.world === 'feed') {
-    const total = g.need + (g.given || 0);
-    let bits = '';
-    for (let i = 0; i < 10; i++) bits += '<i class="' + (i < total ? 'on' : '') + '">' + (i < total ? '🍓' : '') + '</i>';
-    inner = '<div class="bowl"><b>' + total + '</b><div class="tenframe">' + bits + '</div></div>' +
-      '<button type="button" class="give" data-act="ten-feed">' + (vi ? 'Cho một quả' : 'Give one berry') + '</button>';
-  } else if (g.world === 'lock') {
+  if (g.world === 'lock') {
     const sum = g.need + (g.dial || 0);
-    inner = '<div class="chest">' + (g.flash === 'yes' ? '🎁' : '🔐') + '</div><div class="dial"><b>' + g.need + '</b><span>+</span><b>' + (g.dial || 0) + '</b><span>=</span><b class="' + (sum === 10 ? 'full' : '') + '">' + sum + '</b></div>' +
+    const gems = g.flash === 'yes' ? '<div class="gems">💎✨👑✨💎</div>' : '';
+    inner = gems + '<div class="chest">' + (g.flash === 'yes' ? '🎁' : '🔐') + '</div><div class="dial"><b>' + g.need + '</b><span>+</span><b>' + (g.dial || 0) + '</b><span>=</span><b class="' + (sum === 10 ? 'full' : '') + '">' + sum + '</b></div>' +
       '<div class="dialbtns"><button type="button" data-act="ten-dial" data-dir="-1">−</button><button type="button" data-act="ten-dial" data-dir="1">+</button></div>';
+  } else if (g.world === 'grow') {
+    const grown = (progress.tenGarden || []).map(function (k) { return '<i>' + k.replace('-', '+') + '</i>'; }).join('');
+    inner = '<div class="garden-row">' + (grown || '<i>·</i>') + '</div><div class="dial"><button type="button" data-act="ten-side" data-side="left" data-dir="-1">−</button><b>' + (g.left || 0) + '</b><button type="button" data-act="ten-side" data-side="left" data-dir="1">+</button><span>+</span><button type="button" data-act="ten-side" data-side="right" data-dir="-1">−</button><b>' + (g.right || 0) + '</b><button type="button" data-act="ten-side" data-side="right" data-dir="1">+</button></div>' +
+      '<button type="button" class="give" data-act="ten-plant">' + (vi ? 'Trồng cặp này' : 'Plant this pair') + '</button>';
+  } else if (g.world === 'judge') {
+    inner = '<div class="fox">' + (g.flash === 'yes' ? '🎉' : '🦊') + '</div><p class="claim">' + g.need + ' + ' + g.claim + ' = 10?</p>' +
+      '<div class="dialbtns"><button type="button" data-act="ten-judge" data-yes="1">' + (vi ? 'Đúng' : 'True') + '</button><button type="button" data-act="ten-judge" data-yes="0">' + (vi ? 'Sai' : 'False') + '</button></div>';
+  } else if (g.world === 'potion') {
+    inner = '<div class="chest">' + (g.flash === 'yes' ? '✨' : (g.flash === 'no' ? '💥' : '🧪')) + '</div><p class="claim">' + g.need + ' + ' + (g.dial || 0) + '</p>' +
+      '<div class="dialbtns"><button type="button" data-act="ten-dial" data-dir="-1">−</button><button type="button" data-act="ten-dial" data-dir="1">+</button></div>' +
+      '<button type="button" class="give" data-act="ten-pour">' + (vi ? 'Rót!' : 'Pour!') + '</button>';
+  } else if (g.world === 'bridge') {
+    let slots = '';
+    for (let i = 0; i < 10; i++) slots += '<i class="' + (i < g.need ? 'on' : 'gap') + '"></i>';
+    let keys = '';
+    for (let n = 0; n <= 9; n++) keys += '<button type="button" data-act="ten-plank" data-n="' + n + '">' + n + '</button>';
+    inner = '<div class="frog">' + (g.flash === 'yes' ? '🐸✨' : (g.hint === 'short' ? '💦' : '🐸')) + '</div><div class="bridge">' + slots + '</div><div class="keys">' + keys + '</div>';
   } else {
-    const flyers = (g.choices || []).map(function (n, i) {
-      const mark = g.picked === n ? (n === g.friend ? ' yes' : ' no') : '';
-      return '<button type="button" class="flyer' + mark + '" data-act="ten-pick" data-n="' + n + '" style="--d:' + (i * 1.1) + 's;--t:' + (4.2 + i * 0.7) + 's;top:' + (12 + i * 58) + 'px">' + n + '</button>';
-    }).join('');
-    inner = '<div class="catch-hero">' + g.need + '</div><div class="lanes">' + flyers + '</div>';
+    inner = '<div class="chest">🔐</div>';
   }
   return tenShell(inner, msg, g, vi);
 }
@@ -2375,9 +2453,20 @@ function onClick(e) {
   }
   if (act === 'ten-hear') { sayTen(state.ten && state.ten.flash === 'yes' ? 'yes' : 'ask'); return; }
   if (act === 'ten-pick') { pickTen(Number(el.dataset.n)); return; }
-  if (act === 'ten-feed') { feedTen(); return; }
   if (act === 'ten-dial') { dialTen(Number(el.dataset.dir)); return; }
-  if (act === 'ten-flip') { flipTen(Number(el.dataset.i)); return; }
+  if (act === 'ten-side') {
+    const g = state.ten;
+    if (!g || g.flash === 'yes') return;
+    const side = el.dataset.side === 'right' ? 'right' : 'left';
+    g[side] = Math.max(0, Math.min(10, (g[side] || 0) + Number(el.dataset.dir)));
+    g.flash = '';
+    render();
+    return;
+  }
+  if (act === 'ten-plant') { plantTen(); return; }
+  if (act === 'ten-judge') { judgeTen(el.dataset.yes === '1'); return; }
+  if (act === 'ten-pour') { pourTen(); return; }
+  if (act === 'ten-plank') { plankTen(Number(el.dataset.n)); return; }
   if (act === 'home') { goHome(); return; }
   if (act === 'intro') { goIntro(); return; }
   if (act === 'back') {
@@ -2551,7 +2640,7 @@ function routeFromHash() {
   if (a === 'ten') {
     state.method = 'bonds';
     state.screen = 'tenplay';
-    if (b && ['frame', 'memory', 'feed', 'lock', 'catch'].indexOf(b) >= 0) {
+    if (b && ['lock', 'grow', 'judge', 'potion', 'bridge'].indexOf(b) >= 0) {
       state.ten = { world: b, streak: 0 };
       startTen(true);
     } else state.ten = { world: 'hub', streak: 0 };

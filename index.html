@@ -811,8 +811,10 @@
   .ten-hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
   .ten-play { position: relative; min-height: 420px; margin-top: 8px; border-radius: 28px; padding: 16px; overflow: hidden;
     background: linear-gradient(#8fd6ff, #e7f8ff 40%, #b6f38a); }
-  .theme-memory { background: linear-gradient(#ffe08a, #fff6d8 50%, #ffd0e4); }
-  .theme-feed { background: linear-gradient(#fff3c4, #ffe0b8 55%, #f3c99a); }
+  .theme-grow { background: linear-gradient(#b6f38a, #fff6c8 55%, #8ee86a); }
+  .theme-judge { background: linear-gradient(#ffb15a, #fff3c4 50%, #ff8a8a); }
+  .theme-potion { background: linear-gradient(#7c5cff, #2a2150 62%, #1b2450); color: #fff8e8; }
+  .theme-bridge { background: linear-gradient(#8fd6ff, #3aa0e8 46%, #2fbf62); }
   .theme-lock { background: linear-gradient(#6b4c9a, #2a2150 70%); color: #fff8e8; }
   .theme-catch { background: linear-gradient(#1b2450, #3a4a88 60%, #8fd6ff); }
   .tenframe { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 360px; margin: 12px auto; }
@@ -837,6 +839,17 @@
   .dial .full { color: #ffe56a; }
   .dialbtns { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
   .dialbtns button { width: 72px; height: 72px; border: 0; border-radius: 50%; font-size: 36px; font-weight: 800; background: #ffe56a; color: #6a4218; }
+  .garden-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; min-height: 42px; }
+  .garden-row i { background: #fff; border-radius: 999px; padding: 6px 10px; font-style: normal; font-weight: 800; }
+  .fox, .frog { font-size: 84px; text-align: center; }
+  .claim { text-align: center; font-size: 36px; font-weight: 800; margin: 8px 0; }
+  .bridge { display: flex; gap: 4px; justify-content: center; margin: 12px 0; }
+  .bridge i { width: 28px; height: 18px; border-radius: 4px; background: rgba(255,255,255,.35); }
+  .bridge i.on { background: #8d6e63; }
+  .bridge i.gap { background: #1a6fb5; }
+  .keys { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .keys button { width: 42px; height: 54px; border: 0; border-radius: 8px; background: #ffe08a; font-weight: 800; font-size: 18px; }
+  .gems { text-align: center; font-size: 28px; letter-spacing: 4px; }
   .catch-hero { width: 96px; height: 96px; margin: 8px auto; border-radius: 50%; background: #ffe56a; color: #6a4218; font-size: 42px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 0 #e0a000; }
   .lanes { position: relative; height: 250px; overflow: hidden; }
   .flyer { position: absolute; left: 0; width: 64px; height: 64px; border: 0; border-radius: 50%; background: #fff; color: #4a2d5c; font-size: 24px; font-weight: 800; animation: tenFlyAcross var(--t, 5s) linear infinite; animation-delay: var(--d, 0s); }
@@ -891,6 +904,6 @@
 <div class="cloud c4"></div>
 <div id="app"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">This garden needs JavaScript. / Vườn này cần JavaScript.</p></noscript>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
