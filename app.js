@@ -132,7 +132,8 @@ const UI = {
   idea: { en: 'The idea', vi: 'Ý chính' },
   example: { en: 'The same card your child sees', vi: 'Đúng thẻ con sẽ thấy' },
   doneDaily: { en: 'Done today', vi: 'Hôm nay xong' },
-  about: { en: 'About 4 minutes', vi: 'Khoảng 4 phút' }
+  about: { en: 'About 4 minutes', vi: 'Khoảng 4 phút' },
+  tenPlay: { en: 'Play sky friends', vi: 'Chơi bạn trời' }
 };
 
 const YES = [
@@ -1150,7 +1151,8 @@ function renderIntro() {
     '<article class="panel"><div class="introhead">' + heartLogo() +
     '<div><h2 style="font-family:Georgia,serif;margin:0 0 4px">' + esc(t(m)) + '</h2><p class="en" style="color:#5c564e;font-weight:800;margin:0">' + esc(schoolOf(m)) + '</p></div></div>' +
     bothHTML(m.kid) + speakers(m.kid) +
-    '<div class="hintrow"><button type="button" class="textbtn sun" data-act="demo" data-method="' + m.id + '">' + esc(ui('watch')) + '</button><span class="cap" style="max-width:none">' + esc(ui('about')) + '</span></div>' +
+    '<div class="hintrow"><button type="button" class="textbtn sun" data-act="demo" data-method="' + m.id + '">' + esc(ui('watch')) + '</button><span class="cap" style="max-width:none">' + esc(ui('about')) + '</span>' +
+    (m.id === 'bonds' ? '<button type="button" class="textbtn go" data-act="ten-play">' + esc(ui('tenPlay')) + '</button>' : '') + '</div>' +
     '<div class="levels">' + levels + '</div>' +
     (state.flash ? '<div class="banner" style="margin-top:12px">' + esc(t(state.flash)) + '</div>' : '') +
     '</article>' + footerHTML() + '</div>';
@@ -1423,6 +1425,7 @@ function renderChapter(id) {
     body += '<p class="solved-label">' + esc(ui('example')) + '</p><div class="playcard" style="box-shadow:none">' + cardInner(demo, { solved: true }) +
       '<div class="recap">' + bothHTML(demo.recap) + '</div></div>';
     body += '<div class="hintrow"><button type="button" class="textbtn go" data-act="start" data-method="' + id + '" data-level="1" data-sit="1">' + esc(ui('practice')) + '</button>' +
+      (id === 'bonds' ? '<button type="button" class="textbtn sun" data-act="ten-play">' + esc(ui('tenPlay')) + '</button>' : '') +
       '<button type="button" class="textbtn sun" data-act="quiz-start" data-id="' + id + '">' + esc(ui('quiz')) + '</button></div>';
   }
   if (id === 'choose') {
@@ -1596,6 +1599,76 @@ function soroHelpHTML() {
   return '<aside class="soro-help"><h2>' + (vi ? 'Cách dùng bàn tính' : 'How to use the abacus') + '</h2>' + body +
     '<button type="button" class="textbtn" data-act="soro-help">' + (vi ? 'Đóng hướng dẫn' : 'Close help') + '</button></aside>';
 }
+function startTen(reset) {
+  const need = Math.floor(Math.random() * 11);
+  const friend = 10 - need;
+  const choices = [friend];
+  while (choices.length < 4) {
+    const n = Math.floor(Math.random() * 11);
+    if (choices.indexOf(n) < 0) choices.push(n);
+  }
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = choices[i];
+    choices[i] = choices[j];
+    choices[j] = tmp;
+  }
+  const prev = state.ten || {};
+  state.ten = {
+    need: need,
+    choices: choices,
+    streak: reset ? 0 : (prev.streak || 0),
+    flash: '',
+    picked: null
+  };
+}
+function pickTen(n) {
+  const g = state.ten;
+  if (!g) return;
+  g.picked = n;
+  if (n === 10 - g.need) {
+    g.flash = 'yes';
+    g.streak = (g.streak || 0) + 1;
+    progress.tenBest = Math.max(progress.tenBest || 0, g.streak);
+    save();
+    if (progress.sound) chime();
+    render();
+    later(function () { if (state.screen === 'tenplay') { startTen(false); render(); } }, 850);
+  } else {
+    g.flash = 'no';
+    if (progress.sound) beep(180, 0.1, 'triangle');
+    render();
+  }
+}
+function renderTen() {
+  const g = state.ten || { need: 7, choices: [3, 1, 8, 5], streak: 0, flash: '' };
+  const vi = progress.lang === 'vi';
+  const ask = vi
+    ? (g.need + ' đang tìm bạn để thành 10.')
+    : (g.need + ' is looking for a friend to make 10.');
+  const msg = g.flash === 'yes'
+    ? (vi ? 'Đúng! ' + g.need + ' + ' + (10 - g.need) + ' = 10' : 'Yes! ' + g.need + ' + ' + (10 - g.need) + ' = 10')
+    : g.flash === 'no'
+      ? (vi ? 'Chưa phải. Bạn của ' + g.need + ' cộng lại phải bằng 10.' : 'Not yet. The friend of ' + g.need + ' has to make 10.')
+      : ask;
+  const spots = [
+    { x: '-168px', y: '-78px', z: '80px', c: '#ff5d8f', d: '0s' },
+    { x: '156px', y: '-36px', z: '130px', c: '#7dde6a', d: '.4s' },
+    { x: '-120px', y: '96px', z: '36px', c: '#74c0fc', d: '.8s' },
+    { x: '132px', y: '88px', z: '100px', c: '#e7b0ff', d: '1.1s' }
+  ];
+  const orbs = g.choices.map(function (n, i) {
+    const s = spots[i] || spots[0];
+    const mark = g.picked === n ? (n === 10 - g.need ? ' yes' : ' no') : '';
+    return '<button type="button" class="ten-orb' + mark + '" data-act="ten-pick" data-n="' + n + '" style="--x:' + s.x + ';--y:' + s.y + ';--z:' + s.z + ';--c:' + s.c + ';--d:' + s.d + '">' + n + '</button>';
+  }).join('');
+  const best = progress.tenBest || 0;
+  return '<div class="wrap">' + topHTML() +
+    '<div class="playtop"><button type="button" class="pill" data-act="intro">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Liên tiếp ' : 'Streak ') + g.streak + (best ? ' · ' + best : '') + '</span></div>' +
+    '<div class="tenworld"><div class="ten-sky"><i class="ten-cloud c1"></i><i class="ten-cloud c2"></i><div class="ten-bird" aria-hidden="true">🦉</div>' +
+    '<div class="ten-stage"><div class="ten-nest"><b>' + g.need + '</b><small>' + (vi ? 'cần bạn' : 'needs a friend') + '</small></div>' + orbs + '</div></div>' +
+    '<p class="ten-msg ' + (g.flash || '') + '">' + esc(msg) + '</p></div></div>';
+}
 function render() {
   if (typeof document === 'undefined') return;
   const shake = state.shake;
@@ -1611,6 +1684,7 @@ function render() {
   else if (state.screen === 'play') html = renderPlay();
   else if (state.screen === 'clear') html = renderClear();
   else if (state.screen === 'parents') html = renderParents();
+  else if (state.screen === 'tenplay') html = renderTen();
   app.innerHTML = html + sorobanHTML();
   state.shake = null;
   if (state.screen === 'play' && state.focus) {
@@ -2094,6 +2168,15 @@ function onClick(e) {
     render();
     return;
   }
+  if (act === 'ten-play') {
+    state.method = 'bonds';
+    state.screen = 'tenplay';
+    startTen(true);
+    if (history.replaceState) history.replaceState(null, '', '#/ten');
+    render();
+    return;
+  }
+  if (act === 'ten-pick') { pickTen(Number(el.dataset.n)); return; }
   if (act === 'home') { goHome(); return; }
   if (act === 'intro') { goIntro(); return; }
   if (act === 'back') {
@@ -2264,6 +2347,7 @@ function routeFromHash() {
     return 'done';
   }
   if (a === 'daily') { startDaily(); return 'done'; }
+  if (a === 'ten') { state.method = 'bonds'; state.screen = 'tenplay'; startTen(true); return 'paint'; }
   return false;
 }
 function init() {
