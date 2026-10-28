@@ -1945,6 +1945,7 @@ function woodValue() {
   ensureWood();
   let n = 0;
   for (let i = 0; i < 13; i++) {
+    if (state.wood[i].earth > 4) state.wood[i].earth = 4;
     const v = (state.wood[i].heaven ? 5 : 0) + state.wood[i].earth;
     n += v * Math.pow(10, 12 - i);
   }
@@ -1957,7 +1958,7 @@ function woodMetrics() {
   const topPad = 6;
   const beamTop = topPad + step + beadH;
   const earthUp = beamTop + beamH + 3;
-  const rodH = earthUp + step + 5 * beadH + 4 * 2 + 6;
+  const rodH = earthUp + step + 4 * beadH + 3 * 2 + 6;
   return { beadH: beadH, step: step, beamH: beamH, beamTop: beamTop, earthUp: earthUp, rodH: rodH, topPad: topPad };
 }
 function woodHeavenY(on, m) {
@@ -1974,7 +1975,7 @@ function woodHTML() {
   const rods = state.wood.map(function (rod, i) {
     const dot = (12 - i) % 3 === 0 ? '<i></i>' : '';
     let beads = '<button type="button" class="wood-bead" data-act="wood-heaven" data-rod="' + i + '" style="top:' + woodHeavenY(rod.heaven, m) + 'px"></button>';
-    for (let b = 0; b < 5; b++) {
+    for (let b = 0; b < 4; b++) {
       beads += '<button type="button" class="wood-bead" data-act="wood-earth" data-rod="' + i + '" data-bead="' + b + '" style="top:' + woodEarthY(b, b < rod.earth, m) + 'px"></button>';
     }
     return '<div class="wood-rod">' + beads + '<div class="wood-beam" style="top:' + m.beamTop + 'px">' + dot + '</div></div>';
