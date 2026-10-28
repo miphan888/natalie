@@ -20,6 +20,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  html { background: #7ecbff; min-height: 100%; }
   body {
     min-height: 100vh;
     color: var(--ink);
@@ -32,7 +33,7 @@
       linear-gradient(#9fd8f5 0 34%, #d7f3c4 34% 100%);
   }
   body.screen-parents, body.screen-chapter { background: #f3eadc; }
-  body.screen-clear { background: #e7f8ee; }
+  body.screen-clear { background: #7ecbff url("scene.svg") center / cover no-repeat fixed; }
   button, input { font: inherit; color: inherit; }
   button { cursor: pointer; touch-action: manipulation; }
   button:active { transform: translate(2px, 2px); }
@@ -357,7 +358,16 @@
     box-shadow: 6px 6px 0 var(--ink); padding: 16px; max-width: 440px; width: 100%;
   }
   .dlg .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .clearwrap { position: relative; overflow: hidden; text-align: center; padding: 18px 8px 8px; }
+  .clearwrap { position: relative; overflow: hidden; text-align: center; padding: 18px 8px 28px; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; }
+  .clearcard {
+    background: rgba(255, 250, 243, .96); border: 6px solid #fff; border-radius: 28px;
+    padding: 18px 16px 16px; width: min(520px, calc(100% - 8px));
+    box-shadow: 0 14px 0 rgba(255, 120, 170, .16);
+  }
+  .playcard.leaving { animation: cardOut .28s ease forwards; }
+  .playcard.arriving, .clearcard.arriving { animation: cardIn .36s ease; }
+  @keyframes cardOut { to { opacity: .15; transform: translateY(-14px) scale(.98); } }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
   .clearwrap h2 { font-family: Georgia, serif; font-size: 40px; margin: 8px 0; }
   .bigstars { font-size: 42px; letter-spacing: 4px; }
   .confetti { position: absolute; inset: 0; pointer-events: none; }
@@ -761,6 +771,6 @@
 <div class="cloud c4"></div>
 <div id="app"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">This garden needs JavaScript. / Vườn này cần JavaScript.</p></noscript>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

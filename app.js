@@ -1183,7 +1183,7 @@ function renderPlay() {
   const title = state.demo ? ui('watch') : (t(headM) + ' · ' + t(LEVEL_NAME[(state.level || 1) - 1]));
   return '<div class="wrap">' + topHTML() +
     '<div class="playtop"><button type="button" class="pill" data-act="back">' + esc(ui('back')) + '</button><strong>' + esc(title) + '</strong>' + dotsHTML() + '</div>' +
-    banner + '<div class="playwrap' + (nativeKeys ? ' native-keys' : '') + '"><article class="playcard">' + cardInner(p, {}) + phoneCheck +
+    banner + '<div class="playwrap' + (nativeKeys ? ' native-keys' : '') + '"><article class="playcard">' + cardInner(p, { solved: !!(state.round && state.round.locked) }) + phoneCheck +
     '<div class="bubble" aria-live="polite">' + pipSVG(mood) + '<div>' + bothHTML(bubble) + speakers(bubble) + recap + sit + actions + '</div></div></article>' +
     (showPad && !nativeKeys ? padHTML() : '') + '</div>' +
     (state.leaveAsk ? '<div class="dlgback"><div class="dlg">' + bothHTML(bi(UI.leave.en, UI.leave.vi)) + bothHTML(bi(UI.leave2.en, UI.leave2.vi)) +
@@ -1211,10 +1211,13 @@ function renderClear() {
   const again = c.method === 'daily'
     ? '<button type="button" class="textbtn sun" data-act="daily">' + esc(ui('again')) + '</button>'
     : '<button type="button" class="textbtn sun" data-act="start" data-method="' + c.method + '" data-level="' + c.level + '">' + esc(ui('again')) + '</button>';
-  return '<div class="wrap"><div class="clearwrap">' + confettiHTML() + topHTML() + pipSVG('wow') +
+  const nextLine = progress.lang === 'vi' ? 'Chọn bài tiếp. Vườn vẫn ở đây.' : 'Pick the next one. The garden is still here.';
+  return '<div class="wrap"><div class="clearwrap">' + confettiHTML() + topHTML() +
+    '<div class="clearcard">' + pipSVG('wow') +
     '<h2>' + esc(title) + '</h2><div class="bigstars">' + starStr(c.stars) + '</div>' + bothHTML(line) +
+    '<p class="tapmsg">' + esc(nextLine) + '</p>' +
     '<div class="hintrow" style="justify-content:center">' + next + again +
-    '<button type="button" class="textbtn" data-act="home">' + esc(ui('garden')) + '</button></div></div></div>';
+    '<button type="button" class="textbtn" data-act="home">' + esc(ui('garden')) + '</button></div></div></div></div>';
 }
 
 const BOOK = {
@@ -1875,12 +1878,22 @@ function runDemo(p) {
 function nextCard() {
   clearTimeout(timer);
   if (!state.round || state.demo) return;
-  state.round.index++;
-  if (state.round.index >= state.round.problems.length) {
-    finishRound();
-    return;
-  }
-  loadCard(true);
+  const card = document.querySelector('.playcard');
+  const go = function () {
+    state.round.index++;
+    if (state.round.index >= state.round.problems.length) {
+      finishRound();
+      const done = document.querySelector('.clearcard');
+      if (done) done.classList.add('arriving');
+      return;
+    }
+    loadCard(true);
+    const next = document.querySelector('.playcard');
+    if (next) next.classList.add('arriving');
+  };
+  if (!card) { go(); return; }
+  card.classList.add('leaving');
+  setTimeout(go, 280);
 }
 function finishRound() {
   const stars = starCount(state.round.wrong, state.round.hints);
@@ -1922,8 +1935,10 @@ function onCorrect() {
   state.bubble = line;
   if (progress.sound) chime();
   if (progress.read) speak(t(line), progress.lang);
+  const active = document.activeElement;
+  if (active && active.blur && active.dataset && active.dataset.slot) active.blur();
   render();
-  later(nextCard, 2800);
+  later(nextCard, 1600);
 }
 function check() {
   if (!state.round || state.round.locked) return;
