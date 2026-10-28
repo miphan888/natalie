@@ -153,7 +153,8 @@ const BOOK_IDS = ['how', 'bonds', 'counton', 'doubles', 'maketen', 'taketen', 't
 
 let progress = {
   name: '', lang: 'vi', sound: true, read: true, sit: false,
-  stars: {}, fruit: 0, readCh: {}, quiz: {}, unlockAll: false, sawHow: false, daily: {}
+  stars: {}, fruit: 0, readCh: {}, quiz: {}, unlockAll: false, sawHow: false, daily: {},
+  soroCols: 5, soroColor: 'black'
 };
 
 let state = {
@@ -803,6 +804,12 @@ function load() {
   progress.daily = progress.daily || {};
   progress.readCh = progress.readCh || {};
   progress.quiz = progress.quiz || {};
+  if (progress.soroColsDefault !== '5') {
+    progress.soroCols = 5;
+    progress.soroColsDefault = '5';
+    save();
+  }
+  if ([3, 5, 7, 9, 13].indexOf(Number(progress.soroCols)) < 0) progress.soroCols = 5;
 }
 function unlocked(method, level) {
   if (progress.unlockAll) return true;
@@ -1478,11 +1485,9 @@ function sorobanHTML() {
   const rods = state.soroban.map(function (rod, i) {
     const place = state.soroban.length - 1 - i;
     const dot = place % 3 === 0 ? '<i></i>' : '';
-    const heavenTop = (rod.heaven ? 16 : 1) + '%';
-    let beads = '<button type="button" class="bead" style="top:' + heavenTop + '" data-act="soro-heaven" data-rod="' + i + '" aria-label="5"></button>';
+    let beads = '<button type="button" class="bead" data-act="soro-heaven" data-rod="' + i + '" aria-label="5"></button>';
     for (let b = 0; b < 4; b++) {
-      const top = earthTop(b, b < rod.earth);
-      beads += '<button type="button" class="bead" style="top:' + top + '" data-act="soro-earth" data-rod="' + i + '" data-bead="' + b + '" aria-label="1"></button>';
+      beads += '<button type="button" class="bead" data-act="soro-earth" data-rod="' + i + '" data-bead="' + b + '" aria-label="1"></button>';
     }
     return '<div class="soro-rod">' + beads + '<div class="beam">' + dot + '</div></div>';
   }).join('');
@@ -1575,18 +1580,50 @@ function render() {
     if (el) el.classList.add('shake');
   }
   bindSoroban();
+  paintAllRods();
+  requestAnimationFrame(paintAllRods);
 }
-function earthTop(b, counted) {
-  return (counted ? (33 + b * 11) : (55 + b * 11)) + '%';
+function rodMetrics(col) {
+  const h = col.clientHeight || 360;
+  const w = col.clientWidth || 48;
+  let beadH = Math.max(12, Math.min(20, Math.round(w * 0.34)));
+  if (h < beadH * 8 + 36) beadH = Math.max(10, Math.floor((h - 36) / 8));
+  const gap = 2;
+  const beamH = Math.max(8, Math.min(12, Math.round(beadH * 0.7)));
+  const beamTop = Math.max(beadH + 8, Math.round(h * 0.24));
+  return { h: h, beadH: beadH, gap: gap, beamH: beamH, beamTop: beamTop };
+}
+function heavenY(on, m) {
+  return on ? m.beamTop - m.beadH - 2 : 3;
+}
+function earthY(b, counted, m) {
+  if (counted) return m.beamTop + m.beamH + 3 + b * (m.beadH + m.gap);
+  return m.h - 4 - (4 - b) * (m.beadH + m.gap);
+}
+function paintAllRods() {
+  if (!state.soroban) return;
+  for (let i = 0; i < state.soroban.length; i++) paintRod(i);
 }
 function paintRod(i) {
   const col = document.querySelectorAll('.soro-rod')[i];
   const rod = state.soroban[i];
   if (!col || !rod) return;
+  const m = rodMetrics(col);
+  const beam = col.querySelector('.beam');
+  if (beam) {
+    beam.style.top = m.beamTop + 'px';
+    beam.style.height = m.beamH + 'px';
+  }
   const heaven = col.querySelector('[data-act="soro-heaven"]');
-  if (heaven) heaven.style.top = (rod.heaven ? 16 : 1) + '%';
+  if (heaven) {
+    heaven.style.height = m.beadH + 'px';
+    heaven.style.top = heavenY(rod.heaven, m) + 'px';
+  }
   const beads = col.querySelectorAll('[data-act="soro-earth"]');
-  for (let b = 0; b < beads.length; b++) beads[b].style.top = earthTop(b, b < rod.earth);
+  for (let b = 0; b < beads.length; b++) {
+    beads[b].style.height = m.beadH + 'px';
+    beads[b].style.top = earthY(b, b < rod.earth, m) + 'px';
+  }
   const num = document.querySelector('.soro-num');
   if (num) num.textContent = sorobanValue().toLocaleString(progress.lang === 'vi' ? 'vi-VN' : 'en-US');
 }
@@ -1623,13 +1660,14 @@ function bindSoroban() {
     const rod = state.soroban[drag.rodIndex];
     const col = box.querySelectorAll('.soro-rod')[drag.rodIndex];
     if (!rod || !col) return;
-    const rect = col.getBoundingClientRect();
-    const dyPct = dy / rect.height * 100;
+    const m = rodMetrics(col);
     if (drag.kind === 'heaven') {
-      const top = Math.max(1, Math.min(16, drag.startTop + dyPct));
+      const minTop = 3;
+      const maxTop = Math.max(minTop, m.beamTop - m.beadH - 2);
+      const top = Math.max(minTop, Math.min(maxTop, drag.startTop + dy));
       const el = col.querySelector('[data-act="soro-heaven"]');
-      if (el) el.style.top = top + '%';
-      const next = top > 9;
+      if (el) el.style.top = top + 'px';
+      const next = top > (minTop + maxTop) / 2;
       if (next !== rod.heaven) {
         rod.heaven = next;
         if (progress.sound) beep(next ? 440 : 320, 0.04);
@@ -1638,11 +1676,11 @@ function bindSoroban() {
       }
     } else {
       const b = drag.bead;
-      const minTop = 33 + b * 11;
-      const maxTop = 55 + b * 11;
-      const top = Math.max(minTop, Math.min(maxTop, drag.startTop + dyPct));
+      const minTop = earthY(b, true, m);
+      const maxTop = earthY(b, false, m);
+      const top = Math.max(Math.min(minTop, maxTop), Math.min(Math.max(minTop, maxTop), drag.startTop + dy));
       const beads = col.querySelectorAll('[data-act="soro-earth"]');
-      if (beads[b]) beads[b].style.top = top + '%';
+      if (beads[b]) beads[b].style.top = top + 'px';
       const toward = top < (minTop + maxTop) / 2;
       const next = toward ? Math.max(rod.earth, b + 1) : Math.min(rod.earth, b);
       if (next !== rod.earth) {
@@ -1650,7 +1688,7 @@ function bindSoroban() {
         if (progress.sound) beep(340 + next * 28, 0.04);
         for (let i = 0; i < beads.length; i++) {
           if (i === b) continue;
-          beads[i].style.top = earthTop(i, i < rod.earth);
+          beads[i].style.top = earthY(i, i < rod.earth, m) + 'px';
         }
         const num = document.querySelector('.soro-num');
         if (num) num.textContent = sorobanValue().toLocaleString(progress.lang === 'vi' ? 'vi-VN' : 'en-US');
@@ -2121,6 +2159,8 @@ function init() {
   document.addEventListener('click', onClick);
   document.addEventListener('input', onInput);
   document.addEventListener('keydown', onKeyDown);
+  window.addEventListener('resize', function () { if (state.sorobanOpen) paintAllRods(); });
+  document.addEventListener('fullscreenchange', function () { if (state.sorobanOpen) requestAnimationFrame(paintAllRods); });
   document.addEventListener('focusin', onFocus);
   document.addEventListener('pointerdown', e => {
     if (e.target.closest && e.target.closest('.pad')) e.preventDefault();
