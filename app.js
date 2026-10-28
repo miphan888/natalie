@@ -1584,13 +1584,18 @@ function render() {
   requestAnimationFrame(paintAllRods);
 }
 function rodMetrics(col) {
-  const h = col.clientHeight || 360;
-  const w = col.clientWidth || 48;
-  let beadH = Math.max(12, Math.min(20, Math.round(w * 0.34)));
-  if (h < beadH * 8 + 36) beadH = Math.max(10, Math.floor((h - 36) / 8));
-  const gap = 2;
-  const beamH = Math.max(8, Math.min(12, Math.round(beadH * 0.7)));
-  const beamTop = Math.max(beadH + 8, Math.round(h * 0.24));
+  const h = col.clientHeight || 220;
+  const w = col.clientWidth || 72;
+  const gap = 3;
+  let beadH = Math.round(Math.min(42, Math.max(26, w * 0.5)));
+  function fits(bh) {
+    const beam = Math.max(10, Math.min(14, Math.round(bh * 0.38)));
+    const heavenZone = bh + Math.round(bh * 0.42) + 8;
+    return heavenZone + beam + 4 * (bh + gap) + 6 <= h;
+  }
+  while (beadH > 22 && !fits(beadH)) beadH -= 1;
+  const beamH = Math.max(10, Math.min(14, Math.round(beadH * 0.38)));
+  const beamTop = beadH + Math.round(beadH * 0.42) + 6;
   return { h: h, beadH: beadH, gap: gap, beamH: beamH, beamTop: beamTop };
 }
 function heavenY(on, m) {
