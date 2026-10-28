@@ -133,7 +133,7 @@ const UI = {
   example: { en: 'The same card your child sees', vi: 'Đúng thẻ con sẽ thấy' },
   doneDaily: { en: 'Done today', vi: 'Hôm nay xong' },
   about: { en: 'About 4 minutes', vi: 'Khoảng 4 phút' },
-  tenPlay: { en: 'Play sky friends', vi: 'Chơi bạn trời' }
+  tenPlay: { en: 'Ten games', vi: 'Trò thành 10' }
 };
 
 const YES = [
@@ -865,12 +865,12 @@ function chime() {
 function stopSpeak() {
   try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}
 }
-function speak(text, lang) {
+function speak(text, lang, rate) {
   if (typeof speechSynthesis === 'undefined' || !text) return;
   stopSpeak();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang === 'vi' ? 'vi-VN' : 'en-US';
-  u.rate = 0.92;
+  u.rate = rate || 0.92;
   try {
     const voices = speechSynthesis.getVoices();
     const want = lang === 'vi' ? 'vi' : 'en';
@@ -1619,8 +1619,33 @@ function startTen(reset) {
     choices: choices,
     streak: reset ? 0 : (prev.streak || 0),
     flash: '',
-    picked: null
+    picked: null,
+    world: prev.world && prev.world !== 'hub' ? prev.world : 'sky'
   };
+}
+function tenWords(n) {
+  const vi = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín', 'mười'];
+  const en = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  return (progress.lang === 'vi' ? vi : en)[n] || String(n);
+}
+function tenLine(kind) {
+  const g = state.ten || {};
+  const vi = progress.lang === 'vi';
+  const n = tenWords(g.need);
+  const f = tenWords(10 - g.need);
+  if (kind === 'yes') return vi ? (n + ' cộng ' + f + ' bằng mười.') : (n + ' plus ' + f + ' is ten.');
+  if (kind === 'no') return vi ? 'Chưa phải bạn đó. Nghe lại nhé.' : 'Not that friend. Listen again.';
+  const lead = {
+    sky: vi ? 'Quả số ' + n + ' đang cô đơn. ' : 'Fruit ' + n + ' is lonely. ',
+    pond: vi ? 'Ếch cần một lá. Số ' + n + '. ' : 'The frog needs a pad. ' + n + '. ',
+    bake: vi ? 'Bánh cần một bạn. Số ' + n + '. ' : 'The cookie needs a friend. ' + n + '. ',
+    rocket: vi ? 'Tên lửa cần nhiên liệu. Số ' + n + '. ' : 'The rocket needs fuel. ' + n + '. '
+  };
+  return (lead[g.world] || '') + (vi ? 'Số nào cộng thành mười?' : 'Which number makes ten?');
+}
+function sayTen(kind) {
+  if (!progress.read) return;
+  speak(tenLine(kind || 'ask'), progress.lang, 0.82);
 }
 function pickTen(n) {
   const g = state.ten;
@@ -1632,17 +1657,39 @@ function pickTen(n) {
     progress.tenBest = Math.max(progress.tenBest || 0, g.streak);
     save();
     if (progress.sound) chime();
+    sayTen('yes');
     render();
-    later(function () { if (state.screen === 'tenplay') { startTen(false); render(); } }, 1400);
+    later(function () {
+      if (state.screen !== 'tenplay') return;
+      startTen(false);
+      render();
+      sayTen('ask');
+    }, 1600);
   } else {
     g.flash = 'no';
     if (progress.sound) beep(180, 0.1, 'triangle');
+    sayTen('no');
     render();
   }
 }
 function renderTen() {
-  const g = state.ten || { need: 7, choices: [3, 1, 8, 5], streak: 0, flash: '' };
+  const g = state.ten || { world: 'hub', need: 7, choices: [], streak: 0, flash: '' };
   const vi = progress.lang === 'vi';
+  if (!g.world || g.world === 'hub') {
+    const games = [
+      ['sky', '🍓', vi ? 'Vườn quả' : 'Fruit sky', vi ? 'Quả cô đơn tìm bạn.' : 'A lonely fruit wants a friend.'],
+      ['pond', '🐸', vi ? 'Ao ếch' : 'Frog pond', vi ? 'Ếch nhảy lên lá đúng.' : 'The frog hops to the right pad.'],
+      ['bake', '🍪', vi ? 'Tiệm bánh' : 'Cookie shop', vi ? 'Bánh cần bạn phủ lên.' : 'The cookie needs a topping friend.'],
+      ['rocket', '🚀', vi ? 'Tên lửa' : 'Rocket', vi ? 'Đổ đúng nhiên liệu để bay.' : 'Add the fuel that makes ten.']
+    ];
+    const cards = games.map(function (gm) {
+      return '<button type="button" class="ten-card" data-act="ten-world" data-w="' + gm[0] + '"><b>' + gm[1] + '</b><strong>' + esc(gm[2]) + '</strong><small>' + esc(gm[3]) + '</small></button>';
+    }).join('');
+    return '<div class="wrap">' + topHTML() +
+      '<div class="playtop"><button type="button" class="pill" data-act="intro">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong></div>' +
+      '<p class="ten-msg">' + esc(vi ? 'Chọn một trò. Máy sẽ đọc câu hỏi.' : 'Pick a game. The question will be read aloud.') + '</p>' +
+      '<div class="ten-hub">' + cards + '</div></div>';
+  }
   const pals = [
     { e: '⭐', c: '#ffe08a' }, { e: '🍒', c: '#ff6b9a' }, { e: '🍋', c: '#ffe56a' },
     { e: '🍓', c: '#ff5d8f' }, { e: '🫐', c: '#9b8cff' }, { e: '🍊', c: '#ffb15a' },
@@ -1650,6 +1697,8 @@ function renderTen() {
     { e: '🥝', c: '#9be58a' }, { e: '🍈', c: '#c8f5a0' }
   ];
   const hero = pals[g.need] || pals[0];
+  const marks = { sky: hero.e, pond: '🐸', bake: '🍪', rocket: '🚀' };
+  const heroMark = marks[g.world] || hero.e;
   const ask = vi
     ? (hero.e + ' ' + g.need + ' đang cô đơn. Bạn nào cộng thành 10?')
     : (hero.e + ' ' + g.need + ' is lonely. Who makes 10?');
@@ -1676,13 +1725,14 @@ function renderTen() {
   }
   const best = progress.tenBest || 0;
   return '<div class="wrap">' + topHTML() +
-    '<div class="playtop"><button type="button" class="pill" data-act="intro">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Bạn tìm được ' : 'Friends ') + g.streak + (best ? ' · ' + best : '') + '</span></div>' +
-    '<div class="tenworld"><div class="ten-sky' + (g.flash === 'yes' ? ' party' : '') + '"><div class="ten-rainbow"></div>' +
+    '<div class="playtop"><button type="button" class="pill" data-act="ten-hub">' + esc(ui('back')) + '</button><strong>' + esc(ui('tenPlay')) + '</strong><span>' + (vi ? 'Bạn tìm được ' : 'Friends ') + g.streak + (best ? ' · ' + best : '') + '</span>' +
+    '<button type="button" class="pill on" data-act="ten-hear">' + (vi ? 'Nghe lại' : 'Hear again') + '</button></div>' +
+    '<div class="tenworld"><div class="ten-sky theme-' + g.world + (g.flash === 'yes' ? ' party' : '') + '"><div class="ten-rainbow"></div>' +
     '<i class="spark" style="left:12%;top:18%">✦</i><i class="spark" style="left:62%;top:12%;animation-delay:.6s">✦</i><i class="spark" style="right:16%;top:28%;animation-delay:1s">✧</i>' +
     '<i class="butterfly" style="left:10%;top:34%">🦋</i><i class="butterfly" style="right:14%;top:42%;animation-delay:-2s">🦋</i>' +
     '<div class="ten-island"><i style="left:30px">🌷</i><i style="left:120px">🌼</i><i style="left:200px">🌸</i></div>' +
     '<div class="hearts">' + hearts + '</div>' +
-    '<div class="ten-hero" style="--c:' + hero.c + '"><span>' + hero.e + '</span><b>' + g.need + '</b></div>' +
+    '<div class="ten-hero" style="--c:' + hero.c + '"><span>' + heroMark + '</span><b>' + g.need + '</b></div>' +
     orbs + '</div><p class="ten-msg ' + (g.flash || '') + '">' + esc(msg) + '</p></div></div>';
 }
 function render() {
@@ -2184,14 +2234,25 @@ function onClick(e) {
     render();
     return;
   }
-  if (act === 'ten-play') {
+  if (act === 'ten-play' || act === 'ten-hub') {
     state.method = 'bonds';
     state.screen = 'tenplay';
-    startTen(true);
+    state.ten = { world: 'hub', streak: (state.ten && state.ten.streak) || 0 };
     if (history.replaceState) history.replaceState(null, '', '#/ten');
     render();
     return;
   }
+  if (act === 'ten-world') {
+    state.method = 'bonds';
+    state.screen = 'tenplay';
+    state.ten = { world: el.dataset.w || 'sky', streak: (state.ten && state.ten.streak) || 0 };
+    startTen(true);
+    if (history.replaceState) history.replaceState(null, '', '#/ten/' + state.ten.world);
+    render();
+    sayTen('ask');
+    return;
+  }
+  if (act === 'ten-hear') { sayTen(state.ten && state.ten.flash ? state.ten.flash : 'ask'); return; }
   if (act === 'ten-pick') { pickTen(Number(el.dataset.n)); return; }
   if (act === 'home') { goHome(); return; }
   if (act === 'intro') { goIntro(); return; }
@@ -2363,7 +2424,15 @@ function routeFromHash() {
     return 'done';
   }
   if (a === 'daily') { startDaily(); return 'done'; }
-  if (a === 'ten') { state.method = 'bonds'; state.screen = 'tenplay'; startTen(true); return 'paint'; }
+  if (a === 'ten') {
+    state.method = 'bonds';
+    state.screen = 'tenplay';
+    if (b && ['sky', 'pond', 'bake', 'rocket'].indexOf(b) >= 0) {
+      state.ten = { world: b, streak: 0 };
+      startTen(true);
+    } else state.ten = { world: 'hub', streak: 0 };
+    return 'paint';
+  }
   return false;
 }
 function init() {
