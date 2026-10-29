@@ -2017,100 +2017,91 @@ function woodBookHTML() {
   const chapters = [
     {
       title: '1. Đọc số',
-      body: '<p>Chỉ hạt <b>chạm thanh gỗ giữa</b> mới được tính. Hạt nằm xa thanh là 0.</p>' +
-        '<p>Hạt trên chạm thanh = <b>5</b>. Mỗi hạt dưới chạm thanh = <b>1</b>. Một cột nhiều nhất là 9, vì 5 + 4 = 9.</p>' +
-        '<p>Cột ngoài cùng bên phải là hàng đơn vị. Cột bên trái kế đó là hàng chục, rồi đến trăm, nghìn. Chấm đồng trên thanh đánh dấu hàng đơn vị và hàng nghìn.</p>' +
-        woodFig([{ h: 0, e: 0, lab: 'đơn vị' }], 'Tất cả hạt xa thanh. Đây là 0.') +
-        woodFig([{ h: 1, e: 2, lab: 'đơn vị' }], 'Hạt trên và 2 hạt dưới chạm thanh: 5 + 2 = 7.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], 'Một hạt dưới ở cột chục. Đó là 10.') +
-        woodFig([{ h: 0, e: 3, lab: 'chục' }, { h: 1, e: 1, lab: 'đơn vị' }], '3 ở cột chục là 30. Hạt trên và 1 hạt dưới ở cột đơn vị là 6. Thành 36.') +
-        '<p class="ex">Mẹo: đọc từ trái sang phải. Nói to “ba chục và sáu” trước khi nói 36.</p>'
+      body: '<p>Soroban này có một hạt trên và bốn hạt dưới mỗi cột. Chỉ hạt chạm thanh gỗ giữa mới được tính. Hạt nằm sát mép trên hoặc sát mép dưới, chưa chạm thanh, là số không.</p>' +
+        '<p>Hạt trên chạm thanh bằng 5. Mỗi hạt dưới chạm thanh bằng 1. Bốn hạt dưới cộng hạt trên là 9. Không có cách nào để một cột hiện số 10. Số 10 phải sang cột bên trái.</p>' +
+        '<p>Cột ngoài cùng bên phải là hàng đơn vị. Cột kế bên trái là hàng chục, rồi trăm, nghìn, chục nghìn. Chấm đồng trên thanh đánh dấu cột đơn vị, và cứ ba cột lại có một chấm. Khi đọc số lớn, chấm giúp không đếm nhầm cột.</p>' +
+        '<h3>Số 0</h3><p>Mọi hạt đều xa thanh. Hạt trên nằm sát mép trên. Bốn hạt dưới nằm sát mép dưới. Giữa hạt trên và thanh còn một khoảng trống đúng bằng một hạt. Giữa thanh và đám hạt dưới cũng còn một khoảng trống đúng bằng một hạt. Số trên tấm gỗ phải hiện 0. Nếu không, còn một hạt đang chạm thanh ở cột nào đó.</p>' +
+        '<h3>Số 7</h3><p>Chỉ nhìn cột đơn vị. Kéo hạt trên xuống chạm thanh: đó là 5. Đẩy hai hạt dưới lên chạm thanh: đó là 2. Ba hạt dưới còn lại vẫn nằm sát đáy. 5 + 2 = 7. Đọc: “hạt trên và hai hạt dưới”.</p>' +
+        '<h3>Số 10</h3><p>Cột đơn vị để trống, mọi hạt xa thanh. Sang cột chục, đẩy đúng một hạt dưới lên chạm thanh. Không đụng hạt trên. Một hạt dưới ở cột chục là một chục, tức 10. Nếu lỡ kéo hạt trên ở cột chục, đó sẽ là 50, không phải 10.</p>' +
+        '<h3>Số 36</h3><p>Cột chục: ba hạt dưới chạm thanh, hạt trên vẫn ở trên. Đó là 30. Cột đơn vị: hạt trên chạm thanh và một hạt dưới chạm thanh. Đó là 6. Đọc từ trái: “ba chục và sáu”, rồi mới nói 36. Đừng cộng lẫn hạt của hai cột.</p>' +
+        '<p class="ex">Mẹo đọc: nói tên hàng trước, rồi nói hạt. “Cột chục: ba hạt dưới. Cột đơn vị: hạt năm và một hạt.” Sau khi quen, bỏ câu mô tả và đọc thẳng số.</p>'
     },
     {
       title: '2. Cộng, còn hạt',
-      body: '<p>Nếu cột còn hạt dưới chưa chạm thanh, hãy đẩy thêm hạt vào thanh. Không cần mẹo.</p>' +
-        woodFig([{ h: 0, e: 2, lab: 'đơn vị' }], 'Bắt đầu: 2.') +
-        woodFig([{ h: 0, e: 3, lab: 'đơn vị' }], '2 + 1: đẩy thêm 1 hạt dưới. Thành 3.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 3, lab: 'đơn vị' }], '13 là 1 ở cột chục và 3 ở cột đơn vị.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], '13 + 1: cột đơn vị còn 1 hạt dưới. Đẩy nó lên. Thành 14.') +
-        '<p class="ex">Mẹo: đếm hạt sắp đẩy, đừng đếm lại cả cột nếu bạn đã biết số cũ.</p>'
+      body: '<p>Cộng thẳng chỉ dùng khi cột còn hạt dưới đang nằm xa thanh, và số hạt đó đủ để đẩy lên. Không đụng hạt trên. Không sang cột bên cạnh.</p>' +
+        '<h3>Ví dụ 2 + 1</h3><ol><li>Xóa bàn về 0.</li><li>Cột đơn vị: đẩy hai hạt dưới lên chạm thanh. Số đang là 2.</li><li>Nhìn phía dưới đám hạt đó. Còn hai hạt đang nằm sát đáy.</li><li>Đẩy một hạt trong hai hạt đó lên, cho nó chạm vào hai hạt đã có.</li><li>Đọc lại: ba hạt dưới chạm thanh. Đó là 3. Hạt trên vẫn ở trên, vì chưa cần số 5.</li></ol>' +
+        '<h3>Ví dụ 13 + 1</h3><ol><li>Cột chục: một hạt dưới chạm thanh. Cột đơn vị: ba hạt dưới chạm thanh. Đó là 13.</li><li>Phép cộng chỉ thêm 1 ở hàng đơn vị, nên không đụng cột chục.</li><li>Cột đơn vị còn một hạt dưới chưa chạm thanh. Đẩy nó lên.</li><li>Cột đơn vị giờ có bốn hạt dưới chạm thanh, là 4. Cột chục vẫn là 1. Thành 14.</li></ol>' +
+        '<h3>Khi nào được cộng thẳng</h3><p>Đếm hạt dưới đang nằm xa thanh. Nếu số hạt đó lớn hơn hoặc bằng số cần cộng, được đẩy thẳng. Ví dụ đang có 1, còn ba hạt dưới xa thanh, thì cộng 1, 2 hoặc 3 đều đẩy thẳng. Cộng 4 thì hết hạt dưới, phải sang chương bạn của 5.</p>' +
+        '<p class="ex">Mẹo: tay chỉ đẩy đúng số hạt cần thêm. Miệng nói “thêm một”. Đừng đếm lại từ đầu nếu đã biết số cũ.</p>'
     },
     {
       title: '3. Cộng — bạn của 5',
-      body: '<p>Khi không còn đủ hạt dưới, dùng bạn của 5.</p>' +
-        '<p>+1 = +5 − 4. +2 = +5 − 3. +3 = +5 − 2. +4 = +5 − 1.</p>' +
-        '<p>Nói to câu này trước khi kéo hạt: “cộng 5, trả lại phần thừa.”</p>' +
-        woodFig([{ h: 0, e: 2, lab: 'đơn vị' }], '2 + 3. Đang có 2. Không đủ 3 hạt dưới.') +
-        woodFig([{ h: 1, e: 2, lab: 'đơn vị' }], 'Đẩy hạt trên xuống: cộng 5. Tạm thành 7.') +
-        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], 'Kéo 2 hạt dưới ra: trừ 2. Còn hạt trên, là 5. Đúng, vì 2 + 3 = 5.') +
-        woodFig([{ h: 0, e: 4, lab: 'đơn vị' }], '4 + 1. +1 = +5 − 4. Hạt trên xuống, kéo hết 4 hạt dưới ra.') +
-        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], 'Còn 5. Đúng.') +
-        '<p class="ex">Mẹo: hai số cộng thành 5 là bạn của nhau: 1 với 4, 2 với 3.</p>'
+      body: '<p>Bạn của 5 dùng khi hạt dưới không đủ để đẩy lên, nhưng cột chưa có hạt trên chạm thanh. Ta cộng dư 5, rồi trả lại phần thừa.</p>' +
+        '<p>Học thuộc bốn câu, nói trước khi kéo:</p><ul><li>+1 nghĩa là +5 rồi trừ 4</li><li>+2 nghĩa là +5 rồi trừ 3</li><li>+3 nghĩa là +5 rồi trừ 2</li><li>+4 nghĩa là +5 rồi trừ 1</li></ul>' +
+        '<p>1 với 4, 2 với 3 là hai cặp bạn của 5. Số cần cộng và số phải trả lại luôn cộng thành 5.</p>' +
+        '<h3>Ví dụ 2 + 3</h3><ol><li>Đặt 2: hai hạt dưới chạm thanh. Còn hai hạt dưới xa thanh, không đủ để cộng 3.</li><li>Nói: “cộng 5, trả 2”.</li><li>Kéo hạt trên xuống chạm thanh. Lúc này cột là 7, vì 5 + 2.</li><li>Kéo hai hạt dưới đang chạm thanh ra, cho chúng về sát đáy. Đó là trả 2.</li><li>Còn mỗi hạt trên chạm thanh. Đó là 5. Kiểm tra: 2 + 3 = 5.</li></ol>' +
+        '<h3>Ví dụ 4 + 1</h3><ol><li>Đặt 4: cả bốn hạt dưới chạm thanh. Không còn hạt dưới nào để cộng 1.</li><li>Nói: “cộng 5, trả 4”.</li><li>Hạt trên xuống. Cột tạm là 9.</li><li>Kéo cả bốn hạt dưới ra. Còn hạt trên. Đó là 5.</li></ol>' +
+        '<h3>Ví dụ 3 + 3</h3><ol><li>Đặt 3. Còn một hạt dưới. Không đủ cộng 3.</li><li>+3 = +5 − 2. Hạt trên xuống, rồi kéo hai hạt dưới ra.</li><li>Còn hạt trên và một hạt dưới. Đó là 6. Đúng, vì 3 + 3 = 6.</li></ol>' +
+        '<p class="ex">Mẹo: nếu hạt trên đã chạm thanh rồi thì không dùng bạn của 5 nữa. Lúc đó phải dùng bạn của 10, sang cột bên trái.</p>'
     },
     {
       title: '4. Cộng — bạn của 10',
-      body: '<p>Khi cột này không chứa nổi phép cộng, sang cột bên trái cộng 1 chục, rồi trả lại phần thừa ở cột này.</p>' +
-        '<p>+1 = +10 − 9. +2 = +10 − 8. +3 = +10 − 7. +4 = +10 − 6. +5 = +10 − 5. +6 = +10 − 4. +7 = +10 − 3. +8 = +10 − 2. +9 = +10 − 1.</p>' +
-        woodFig([{ h: 1, e: 4, lab: 'đơn vị' }], '9 + 1. Cột đơn vị đang là 9. Không thêm được hạt nào.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 1, e: 4, lab: 'đơn vị' }], 'Cột chục đẩy 1 hạt dưới: cộng 10. Tạm thành 19.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], 'Cột đơn vị kéo hết hạt ra: trừ 9. Còn 10. Đúng, vì 9 + 1 = 10.') +
-        woodFig([{ h: 1, e: 3, lab: 'đơn vị' }], '8 + 6. 8 cần 2 để thành 10, mà 6 là 2 và 4. Cách trên bàn: +6 = +10 − 4.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], 'Cộng 10 ở cột chục, rồi trừ 4 ở cột đơn vị. 8 − 4 = 4. Thành 14.') +
-        '<p class="ex">Mẹo: nói “cộng mười, trả bốn” trước khi tay kéo. Tay sẽ không kéo nhầm chiều.</p>'
+      body: '<p>Bạn của 10 dùng khi cột đang làm không chứa nổi phép cộng, kể cả sau khi đã dùng hạt trên. Ta cộng 1 ở cột bên trái, rồi trừ phần thừa ở cột này. Phần thừa và số đang cộng luôn thành 10.</p>' +
+        '<ul><li>+1 = +10 − 9</li><li>+2 = +10 − 8</li><li>+3 = +10 − 7</li><li>+4 = +10 − 6</li><li>+5 = +10 − 5</li><li>+6 = +10 − 4</li><li>+7 = +10 − 3</li><li>+8 = +10 − 2</li><li>+9 = +10 − 1</li></ul>' +
+        '<h3>Ví dụ 9 + 1</h3><ol><li>Cột đơn vị là 9: hạt trên và cả bốn hạt dưới đều chạm thanh. Không còn chỗ để cộng 1.</li><li>Nói: “cộng mười, trả chín”.</li><li>Cột chục: đẩy một hạt dưới lên. Tạm thời bàn đang là 19.</li><li>Cột đơn vị: kéo hạt trên lên, kéo cả bốn hạt dưới xuống. Cột đơn vị về 0.</li><li>Còn 10. Kiểm tra: 9 + 1 = 10.</li></ol>' +
+        '<h3>Ví dụ 8 + 6</h3><ol><li>8 là hạt trên và ba hạt dưới. 6 không nhét thêm được vào cột này.</li><li>Nói: “cộng mười, trả bốn”. Vì 6 + 4 = 10.</li><li>Cột chục thêm một hạt dưới.</li><li>Cột đơn vị phải từ 8 xuống còn 4. Kéo hạt trên lên, vì bớt 5, rồi đẩy một hạt dưới lên để bù lại 1. 8 − 5 + 1 = 4. Cách khác: 8 − 4 = 4, kéo bớt bốn giá trị đang chạm thanh.</li><li>Cột chục là 1, cột đơn vị là 4. Thành 14.</li></ol>' +
+        '<h3>Ví dụ 7 + 8, qua cả bạn của 5 và bạn của 10</h3><ol><li>7 là hạt trên và hai hạt dưới.</li><li>+8 = +10 − 2. Cột chục thêm 1.</li><li>Cột đơn vị bớt 2: kéo hai hạt dưới ra. Còn hạt trên, là 5.</li><li>Kết quả 15. 7 + 8 = 15.</li></ol>' +
+        '<p class="ex">Mẹo: miệng nói “cộng mười, trả …” trước khi tay sang cột trái. Nếu cột trái cũng hết hạt dưới, dùng bạn của 5 ở cột đó, hoặc tiếp tục sang cột nữa.</p>'
     },
     {
       title: '5. Trừ, còn hạt',
-      body: '<p>Nếu hạt đang chạm thanh đủ để kéo ra, hãy kéo ra. Đó là trừ thẳng.</p>' +
-        woodFig([{ h: 1, e: 3, lab: 'đơn vị' }], '8 là hạt trên và 3 hạt dưới.') +
-        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], '8 − 3: kéo 3 hạt dưới ra. Còn hạt trên, là 5.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], '14 − 2: cột đơn vị có 4 hạt. Kéo 2 hạt ra.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 2, lab: 'đơn vị' }], 'Còn 12.') +
-        '<p class="ex">Mẹo: trừ thẳng chỉ khi hạt đang chạm thanh nhiều hơn hoặc bằng số cần trừ.</p>'
+      body: '<p>Trừ thẳng là kéo hạt đang chạm thanh ra xa thanh. Chỉ làm vậy khi giá trị đang chạm thanh đủ lớn so với số cần trừ, và không phải tách hạt trên một cách vụng.</p>' +
+        '<h3>Ví dụ 8 − 3</h3><ol><li>Đặt 8: hạt trên chạm thanh, ba hạt dưới chạm thanh.</li><li>Số 3 nằm trọn trong ba hạt dưới. Không cần đụng hạt trên.</li><li>Kéo đúng ba hạt dưới đó xuống sát đáy.</li><li>Còn hạt trên chạm thanh. Đó là 5. 8 − 3 = 5.</li></ol>' +
+        '<h3>Ví dụ 14 − 2</h3><ol><li>Cột chục: một hạt dưới. Cột đơn vị: bốn hạt dưới. Đó là 14.</li><li>Trừ 2 chỉ ở hàng đơn vị. Cột chục giữ nguyên.</li><li>Kéo hai hạt dưới ở cột đơn vị ra. Còn hai hạt dưới. Thành 12.</li></ol>' +
+        '<h3>Ví dụ 9 − 4</h3><ol><li>9 là hạt trên và bốn hạt dưới.</li><li>4 nằm trọn trong bốn hạt dưới. Kéo cả bốn hạt dưới xuống.</li><li>Còn hạt trên. Đó là 5. 9 − 4 = 5.</li></ol>' +
+        '<p class="ex">Mẹo: trước khi kéo, hỏi “số cần trừ có nằm gọn trong các hạt dưới đang chạm thanh không?”. Nếu có, trừ thẳng. Nếu không, sang chương sau.</p>'
     },
     {
       title: '6. Trừ, không đủ hạt',
-      body: '<p>Làm ngược bạn của 5 hoặc bạn của 10.</p>' +
-        '<p>−1 = −5 + 4. −2 = −5 + 3. −3 = −5 + 2. −4 = −5 + 1.</p>' +
-        '<p>Qua hàng chục: −1 = −10 + 9, −4 = −10 + 6, −6 = −10 + 4.</p>' +
-        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], '5 − 2. Chỉ có hạt trên. −2 = −5 + 3.') +
-        woodFig([{ h: 0, e: 3, lab: 'đơn vị' }], 'Kéo hạt trên ra, đẩy 3 hạt dưới vào. Còn 3. Đúng, vì 5 − 2 = 3.') +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 3, lab: 'đơn vị' }], '13 − 6. Cột đơn vị chỉ có 3, không đủ kéo 6. −6 = −10 + 4.') +
-        woodFig([{ h: 0, e: 0, lab: 'chục' }, { h: 1, e: 2, lab: 'đơn vị' }], 'Kéo 1 hạt ở cột chục. Cột đơn vị thêm 4: 3 + 4 = 7. Thành 7.') +
-        '<p class="ex">Mẹo: hỏi “mình lấy thừa hay lấy thiếu?” Nếu trừ 10 thay vì trừ 6, là lấy thừa 4, phải trả 4 lại.</p>'
+      body: '<p>Khi hạt đang chạm thanh không đủ để kéo, làm ngược. Trừ nhiều hơn số cần trừ, rồi cộng bù lại.</p>' +
+        '<p>Bạn của 5, khi chỉ có hạt trên hoặc hạt dưới không đủ:</p><ul><li>−1 = −5 + 4</li><li>−2 = −5 + 3</li><li>−3 = −5 + 2</li><li>−4 = −5 + 1</li></ul>' +
+        '<p>Bạn của 10, khi phải mượn cột bên trái:</p><ul><li>−1 = −10 + 9</li><li>−2 = −10 + 8</li><li>−3 = −10 + 7</li><li>−4 = −10 + 6</li><li>−5 = −10 + 5</li><li>−6 = −10 + 4</li><li>−7 = −10 + 3</li><li>−8 = −10 + 2</li><li>−9 = −10 + 1</li></ul>' +
+        '<h3>Ví dụ 5 − 2</h3><ol><li>Cột đơn vị chỉ có hạt trên chạm thanh. Không có hạt dưới nào để kéo 2.</li><li>Nói: “trừ 5, trả 3”.</li><li>Đẩy hạt trên lên, xa thanh. Cột tạm về 0.</li><li>Đẩy ba hạt dưới lên chạm thanh. Còn 3. 5 − 2 = 3.</li></ol>' +
+        '<h3>Ví dụ 13 − 6</h3><ol><li>Cột chục có 1. Cột đơn vị có 3. Không kéo được 6 từ 3 hạt dưới.</li><li>Nói: “trừ mười, trả bốn”. Vì lấy cả chục là lấy thừa 4.</li><li>Cột chục: kéo hạt dưới xuống. Cột này về 0. Tạm còn 3.</li><li>Cột đơn vị thêm 4. Đang có 3, thêm 4 thành 7: hạt trên xuống và hai hạt dưới chạm thanh.</li><li>Kết quả 7. 13 − 6 = 7.</li></ol>' +
+        '<h3>Ví dụ 20 − 7</h3><ol><li>Cột chục là 2. Cột đơn vị là 0.</li><li>−7 = −10 + 3. Cột chục bớt 1, còn 1.</li><li>Cột đơn vị đặt 3: ba hạt dưới chạm thanh.</li><li>Thành 13. 20 − 7 = 13.</li></ol>' +
+        '<p class="ex">Mẹo: hỏi “mình lấy thừa hay lấy thiếu?”. Trừ 10 thay vì trừ 6 là lấy thừa, phải trả lại. Trừ 5 thay vì trừ 2 cũng là lấy thừa, phải trả lại.</p>'
     },
     {
       title: '7. Nhân',
-      body: '<p>Nhân từng hàng, từ trái sang phải. Nếu một hàng ra từ 10 trở lên, phần chục sang cột bên trái, phần đơn vị ở lại cột này.</p>' +
-        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 2, lab: 'đơn vị' }], '4 × 3 = 12. Không nhét 12 vào một cột. Đặt 1 ở cột chục và 2 ở cột đơn vị.') +
-        '<p>12 × 3. Tách 12 thành 10 và 2.</p>' +
-        woodFig([{ h: 0, e: 3, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], '10 × 3 = 30. Đặt 3 hạt dưới ở cột chục.') +
-        woodFig([{ h: 0, e: 3, lab: 'chục' }, { h: 1, e: 1, lab: 'đơn vị' }], '2 × 3 = 6. Cộng 6 vào cột đơn vị. Thành 36.') +
-        '<p>12 × 13. Tách 13 thành 10 và 3. Làm từ trái.</p>' +
-        woodFig([{ h: 0, e: 1, lab: 'trăm' }, { h: 0, e: 2, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], '12 × 10 = 120. Đặt 1 ở cột trăm, 2 ở cột chục.') +
-        woodFig([{ h: 0, e: 1, lab: 'trăm' }, { h: 1, e: 0, lab: 'chục' }, { h: 1, e: 1, lab: 'đơn vị' }], '12 × 3 = 36. Cộng 3 vào cột chục và 6 vào cột đơn vị. 120 + 36 = 156.') +
-        '<p class="ex">Mẹo: 6 × 7 = 42 thì cột đang nhân chỉ giữ 2. Số 4 phải sang cột trái. Đừng cố xếp 42 trên một trục.</p>'
+      body: '<p>Nhân trên soroban là đặt tích vào các cột, không phải cộng số đó nhiều lần trừ khi số rất nhỏ và đang học. Luôn đi từ trái sang phải. Một cột chỉ giữ được 0 đến 9. Phần chục của tích phải sang cột bên trái.</p>' +
+        '<h3>Một chữ số: 4 × 3</h3><ol><li>Nhẩm 4 × 3 = 12. Không đặt 12 trên cột đơn vị.</li><li>Chữ số 1 của 12 sang cột chục: một hạt dưới.</li><li>Chữ số 2 ở lại cột đơn vị: hai hạt dưới.</li><li>Đọc 12.</li></ol>' +
+        '<h3>Khi tích riêng cần bạn của 5: 6 × 4</h3><ol><li>6 × 4 = 24.</li><li>Đặt 2 ở cột chục.</li><li>Cột đơn vị cần 4. Bốn hạt dưới chạm thanh. Không cần hạt trên.</li><li>Nếu cột đơn vị đã có số từ bước trước và không đủ hạt, dùng đúng mẹo cộng ở chương 3 và 4 để cộng 4 vào số đang có.</li></ol>' +
+        '<h3>Hai chữ số nhân một chữ số: 12 × 3</h3><ol><li>Tách 12 thành 10 và 2.</li><li>10 × 3 = 30. Đặt 3 ở cột chục. Cột đơn vị vẫn 0.</li><li>2 × 3 = 6. Cộng 6 vào cột đơn vị: hạt trên và một hạt dưới.</li><li>Đọc 36. Nếu bước 3 không đủ hạt, dùng bạn của 5 hoặc bạn của 10, đừng đếm từng hạt một.</li></ol>' +
+        '<h3>Hai chữ số nhân hai chữ số: 12 × 13</h3><ol><li>Tách 13 thành 10 và 3. Làm phần chục trước.</li><li>12 × 10 = 120. Đặt 1 ở cột trăm, 2 ở cột chục, cột đơn vị là 0.</li><li>12 × 3 = 36. Cộng 36 vào số đang có, không xóa 120.</li><li>Cộng 3 vào cột chục: đang có 2, thêm 3 thành 5. Hạt trên xuống, hai hạt dưới kéo ra nếu đang có, hoặc đặt đúng 5.</li><li>Cộng 6 vào cột đơn vị: hạt trên và một hạt dưới.</li><li>Đọc từ trái: một trăm, năm chục, sáu. Đó là 156.</li></ol>' +
+        '<h3>23 × 14, để thấy nhớ sang cột</h3><ol><li>23 × 10 = 230. Đặt 2 ở cột trăm, 3 ở cột chục.</li><li>23 × 4 = 92. Cộng 92 vào 230.</li><li>Cột chục đang là 3, cộng 9 thành 12. Cột chục chỉ giữ 2, nhớ 1 sang cột trăm.</li><li>Cột trăm đang là 2, thêm 1 thành 3. Cột đơn vị đặt 2.</li><li>Kết quả 322. 230 + 92 = 322.</li></ol>' +
+        '<p class="ex">Mẹo: viết tích riêng trong đầu theo từng hàng, rồi cộng vào bàn như một phép cộng bình thường. Đừng nhân và cộng lẫn trong cùng một cử chỉ nếu chưa thuộc.</p>'
     },
     {
       title: '8. Chia',
-      body: '<p>Chia từ trái sang phải. Hỏi số chia vừa mấy lần trong các chữ số đầu. Đặt thương ở cột đó, rồi trừ tích đi. Hạ chữ số tiếp theo và làm lại.</p>' +
-        '<p>84 ÷ 4.</p>' +
-        woodFig([{ h: 1, e: 3, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], 'Bắt đầu: 84. 8 ở cột chục, 4 ở cột đơn vị.') +
-        woodFig([{ h: 0, e: 2, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], '4 vừa 8 đúng 2 lần. Đặt thương 2 ở cột chục, trừ 8. Còn 4 ở cột đơn vị.') +
-        woodFig([{ h: 0, e: 2, lab: 'chục' }, { h: 0, e: 1, lab: 'đơn vị' }], '4 vừa 4 đúng 1 lần. Đặt 1 ở cột đơn vị, trừ 4. Thương là 21, dư 0.') +
-        '<p>14 ÷ 4. Số 1 nhỏ hơn 4, nên không chia ở cột chục. Lấy cả 14.</p>' +
-        woodFig([{ h: 0, e: 0, lab: 'chục' }, { h: 0, e: 3, lab: 'đơn vị' }], '4 × 3 = 12. Đặt thương 3 ở cột đơn vị. 14 − 12 = 2.') +
-        '<p class="ex">Dư là hạt còn lại khi không trừ thêm một lần nữa. 20 ÷ 6: 6 × 3 = 18, đặt 3, còn 2. 2 nhỏ hơn 6 nên dừng. Thương 3, dư 2.</p>' +
-        '<p class="ex">Mẹo: dư luôn nhỏ hơn số chia. Nếu dư lớn hơn hoặc bằng số chia, bạn chia thiếu một lần.</p>'
+      body: '<p>Chia trên soroban đi từ trái sang phải. Mỗi bước có ba câu hỏi: số chia vừa mấy lần, đặt thương ở cột nào, rồi trừ bao nhiêu. Hạ chữ số bên phải xuống và làm lại. Dư phải nhỏ hơn số chia.</p>' +
+        '<h3>84 ÷ 4, chia hết</h3><ol><li>Đặt 84: cột chục là 8, cột đơn vị là 4.</li><li>Nhìn cột chục trước. 4 vừa vào 8 đúng 2 lần, vì 4 × 2 = 8.</li><li>Thương 2 đặt ở cột chục. Trừ 8 ngay tại cột chục, cột đó về 0. Cột đơn vị vẫn còn 4. Có thể nghĩ cột chục giờ mang thương, còn số bị chia dồn sang phải. Với bài nhỏ này, cách an toàn là ghi thương sang các cột trống bên trái nếu sợ lẫn. Khi đã quen, thương nằm đúng hàng của chữ số vừa chia.</li><li>4 vừa vào 4 đúng 1 lần. Đặt 1 ở cột đơn vị, trừ 4. Cột đơn vị về 0.</li><li>Thương là 21. Dư 0.</li></ol>' +
+        '<p>Cách đặt thương cho đỡ lẫn khi mới học: chừa hai cột trống bên trái làm chỗ ghi thương, số bị chia đặt dịch sang phải. 84 đặt ở hai cột bên phải. Thương của hàng chục ghi ở cột bên trái của 8. Thương của hàng đơn vị ghi ở cột bên trái của 4. Hai cách đều đúng nếu không cộng nhầm thương vào số bị chia.</p>' +
+        '<h3>14 ÷ 4, chữ số đầu nhỏ hơn số chia</h3><ol><li>1 nhỏ hơn 4, nên không chia ở cột chục. Thương của hàng chục là 0. Không đặt hạt ở cột đó.</li><li>Lấy cả 14. Hỏi 4 × mấy gần 14 mà không vượt. 4 × 3 = 12. 4 × 4 = 16, vượt, nên chỉ lấy 3.</li><li>Đặt thương 3 ở cột đơn vị.</li><li>Trừ 12 khỏi 14. Còn 2.</li><li>2 nhỏ hơn 4, không chia thêm. Thương 3, dư 2.</li></ol>' +
+        '<h3>20 ÷ 6</h3><ol><li>2 nhỏ hơn 6, nên xét 20.</li><li>6 × 3 = 18. 6 × 4 = 24, vượt. Lấy 3.</li><li>Đặt 3. Trừ 18. Còn 2.</li><li>Dư 2. Thương 3, dư 2.</li></ol>' +
+        '<h3>96 ÷ 4, có nhớ trong lúc trừ</h3><ol><li>4 vừa 9 đúng 2 lần, vì 4 × 2 = 8, còn dư 1 so với 9.</li><li>Đặt thương 2 ở hàng chục. Trừ 8 khỏi 9, cột chục còn 1. Hạ 6 xuống, thành 16.</li><li>4 vừa 16 đúng 4 lần. Đặt 4 ở hàng đơn vị. Trừ 16. Còn 0.</li><li>Thương 24. 4 × 24 = 96.</li></ol>' +
+        '<p class="ex">Mẹo kiểm tra: thương nhân lại với số chia, rồi cộng dư, phải ra đúng số ban đầu. 3 × 4 + 2 = 14. Nếu dư lớn hơn hoặc bằng số chia, bạn đã chia thiếu một lần.</p>'
     },
     {
       title: '9. Mẹo',
-      body: '<p>Xóa bàn về 0 trước mỗi bài. Số trên tấm gỗ phải là 0. Nếu không, một hạt còn chạm thanh sẽ làm sai cả bài.</p>' +
-        '<p>Nói mẹo thành tiếng trước khi tay kéo. “Cộng năm, trả hai.” “Cộng mười, trả bốn.” Tay nghe miệng, ít kéo nhầm chiều.</p>' +
-        '<p>Bạn của 5: 1–4, 2–3. Bạn của 10: 1–9, 2–8, 3–7, 4–6, 5–5. Thuộc sáu cặp này thì cộng trừ nhanh hơn đếm hạt.</p>' +
-        '<p>Nhân và chia luôn đi từ trái sang phải. Cộng trừ một chữ số thì làm ở cột đơn vị trước, chỉ sang cột trái khi phải mượn hoặc nhớ.</p>' +
-        '<p>Sau mỗi bước, đọc số trên tấm gỗ. Nếu không khớp ví dụ trong sách, dừng lại, đừng làm bước sau.</p>' +
-        '<p>Mỗi ngày một ví dụ là đủ: một bài cộng bạn của 5, một bài qua hàng chục, rồi một bài nhân nhỏ. Đừng làm hết sách trong một buổi.</p>' +
-        '<p class="ex">Để sách này mở bên cạnh Soroban. Làm đúng hình nào, kéo bàn gỗ thật cho khớp hình đó, rồi bấm Nghe nếu cần nghe lại câu mẹo.</p>'
+      body: '<p>Xóa bàn về 0 trước mỗi bài. Nhìn số trên tấm gỗ. Nếu chưa phải 0, còn một hạt đang chạm thanh. Kéo hạt đó ra rồi hãy bắt đầu.</p>' +
+        '<p>Nói mẹo thành tiếng trước khi tay kéo. “Cộng năm, trả hai.” “Cộng mười, trả bốn.” “Trừ mười, trả bốn.” Miệng đi trước tay thì ít kéo nhầm chiều.</p>' +
+        '<p>Thuộc bạn của 5: 1 với 4, 2 với 3. Thuộc bạn của 10: 1 với 9, 2 với 8, 3 với 7, 4 với 6, 5 với 5. Sáu cặp này là cả tốc độ của soroban. Đếm hạt chỉ dùng khi chưa thuộc.</p>' +
+        '<p>Cộng trừ một chữ số thì ở cột đơn vị. Chỉ sang trái khi phải nhớ hoặc mượn. Nhân và chia thì từ trái sang phải, vì hàng lớn quyết định hàng nhỏ.</p>' +
+        '<p>Một cột tối đa là 9. Thấy mình định đặt 10 trở lên trên một cột là dừng. Tách phần chục sang trái.</p>' +
+        '<p>Sau mỗi bước, đọc số trên tấm gỗ và đối với kết quả nhẩm. Không khớp thì đừng làm bước sau. Quay lại câu mẹo vừa nói và kiểm tra chiều kéo.</p>' +
+        '<p>Khi chia, luôn thử thêm một lần trong đầu. Nếu dư còn lớn hơn hoặc bằng số chia, thương đang thiếu 1.</p>' +
+        '<p>Mỗi ngày một ví dụ là đủ: một bài bạn của 5, một bài bạn của 10, rồi một bài nhân hoặc chia nhỏ. Làm chậm, nói to, đọc lại số. Đừng làm hết sách trong một buổi.</p>' +
+        '<p class="ex">Để sách mở bên cạnh Soroban. Làm xong một ví dụ, kéo bàn gỗ cho khớp lời trong sách, rồi đọc số trên tấm gỗ để tự kiểm.</p>'
     }
   ];
   const i = Math.max(0, Math.min(chapters.length - 1, state.woodChap || 0));

@@ -19,7 +19,13 @@
     --card: #fffaf3;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  @font-face { font-family: Andika; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: Andika; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: Andika; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/vietnamese-400-normal.woff2") format("woff2"); unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB; }
+  @font-face { font-family: Andika; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: Andika; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: Andika; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/vietnamese-700-normal.woff2") format("woff2"); unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB; }
+  html, body { margin: 0; padding: 0; font-family: Andika, "Segoe UI", sans-serif; }
   html { background: #7ecbff var(--garden-bg, url("scene.svg")) center / cover no-repeat fixed; min-height: 100%; }
   body {
     min-height: 100vh;
@@ -431,7 +437,10 @@
   body {
     min-height: 100dvh;
     color: #4a2d5c;
-    font-family: "Comic Sans MS", "Trebuchet MS", "Segoe UI", sans-serif;
+    font-family: Andika, "Segoe UI", sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
     background: transparent;
   }
   body.screen-parents { background: transparent; }
@@ -930,7 +939,12 @@
   }
   .wood-book nav button.on { background: #e2b56d; }
   .wood-book h2 { margin: 8px 0; font-size: 28px; }
-  .wood-book p { line-height: 1.45; font-weight: 700; }
+  .wood-book p, .wood-book li { line-height: 1.65; font-weight: 400; font-size: 18px; }
+  .wood-book ol, .wood-book ul { padding-left: 1.3em; }
+  .wood-book h2, .wood-book h3, .brand b, .headline, .hero h1, .clearwrap h2, .chapter h2 {
+    font-family: Andika, "Segoe UI", sans-serif;
+    letter-spacing: 0;
+  }
   .wood-book .ex { background: #fff3c4; border-radius: 12px; padding: 8px 10px; }
   .wood-fig { margin: 12px 0; }
   .wood-fig svg { width: 100%; max-width: 460px; height: auto; display: block; }
@@ -976,13 +990,13 @@
 <script>
 (function () {
   var pics = [
-    "backgrounds/rainbow-sky.jpg",
-    "backgrounds/nursery-rainbow.jpg",
-    "backgrounds/teddy-balloons.jpg",
-    "backgrounds/teddy-party.jpg",
-    "backgrounds/pastel-flowers.jpg",
-    "backgrounds/balloon-field.jpg",
-    "backgrounds/balloons-sky.jpg"
+    "backgrounds/forest-lake.jpg",
+    "backgrounds/mountain-lake.jpg",
+    "backgrounds/lavender-field.jpg",
+    "backgrounds/forest-mountains.jpg",
+    "backgrounds/evergreen-lake.jpg",
+    "backgrounds/forest-shore.jpg",
+    "backgrounds/rainbow-sky.jpg"
   ];
   var pick = pics[Math.floor(Math.random() * pics.length)];
   document.documentElement.style.setProperty("--garden-bg", "url(\"" + pick + "\")");
@@ -1004,6 +1018,6 @@
 <div class="cloud c4"></div>
 <div id="app"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">This garden needs JavaScript. / Vườn này cần JavaScript.</p></noscript>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

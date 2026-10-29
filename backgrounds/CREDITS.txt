@@ -1,10 +1,12 @@
-These backgrounds are free photos from Pexels (https://www.pexels.com/license/).
-Free to use and share. No attribution required. Not drawn for this project.
+Nature backgrounds are free photos from Pexels (https://www.pexels.com/license/).
+Free to use and share. No attribution required.
 
+forest-lake.jpg — Pexels photo 5620477
+mountain-lake.jpg — Pexels photo 538507
+lavender-field.jpg — Pexels photo 1166209
+forest-mountains.jpg — Pexels photo 9166130
+evergreen-lake.jpg — Pexels photo 18876417
+forest-shore.jpg — Pexels photo 20323749
 rainbow-sky.jpg — Pexels photo 15790447
-nursery-rainbow.jpg — Pexels photo 13709396
-teddy-balloons.jpg — Pexels photo 15738612
-teddy-party.jpg — Pexels photo 38257438
-pastel-flowers.jpg — Pexels photo 31870271
-balloon-field.jpg — Pexels photo 210012
-balloons-sky.jpg — Pexels photo 8321330
+
+Andika is a free literacy font by SIL (https://software.sil.org/andika/), used so children can read the page more easily.
