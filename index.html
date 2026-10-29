@@ -975,7 +975,15 @@
 </style>
 <script>
 (function () {
-  var pics = ["bg-meadow.svg", "bg-rainbow.svg", "bg-ocean.svg", "bg-picnic.svg", "bg-candy.svg"];
+  var pics = [
+    "backgrounds/rainbow-sky.jpg",
+    "backgrounds/nursery-rainbow.jpg",
+    "backgrounds/teddy-balloons.jpg",
+    "backgrounds/teddy-party.jpg",
+    "backgrounds/pastel-flowers.jpg",
+    "backgrounds/balloon-field.jpg",
+    "backgrounds/balloons-sky.jpg"
+  ];
   var pick = pics[Math.floor(Math.random() * pics.length)];
   document.documentElement.style.setProperty("--garden-bg", "url(\"" + pick + "\")");
 })();
