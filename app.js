@@ -1982,9 +1982,148 @@ function woodHTML() {
   }).join('');
   return '<div class="wood-win" role="dialog" aria-label="soroban"><section class="wood-board">' +
     '<i class="wood-brass tl"></i><i class="wood-brass tr"></i><i class="wood-brass bl"></i><i class="wood-brass br"></i>' +
+    '<button type="button" class="wood-bookbtn" data-act="wood-book">Sách</button>' +
     '<button type="button" class="wood-x" data-act="wood-toggle" aria-label="' + (vi ? 'Đóng' : 'Close') + '">×</button>' +
     '<span class="wood-num">' + woodValue().toLocaleString(vi ? 'vi-VN' : 'en-US') + '</span>' +
-    '<div class="wood-rods" style="height:' + m.rodH + 'px">' + rods + '</div></section></div>';
+    '<div class="wood-rods" style="height:' + m.rodH + 'px">' + rods + '</div></section></div>' +
+    (state.woodBook ? woodBookHTML() : '');
+}
+function woodBeadMark(cx, cy) {
+  return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="15" ry="8" fill="#111"/>' +
+    '<ellipse cx="' + (cx - 4) + '" cy="' + (cy - 2) + '" rx="5" ry="2.2" fill="#666"/>' +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="2.1" fill="#e8c48a"/>';
+}
+function woodFig(cols, caption) {
+  const n = cols.length;
+  const bw = 54;
+  const W = 28 + n * bw;
+  const H = 214;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img"><rect x="3" y="3" width="' + (W - 6) + '" height="188" rx="3" fill="#e7b56d" stroke="#a86a32" stroke-width="7"/>';
+  s += '<rect x="16" y="78" width="' + (W - 32) + '" height="10" fill="#f3d7a2" stroke="#8a5a28"/>';
+  cols.forEach(function (c, i) {
+    const cx = 22 + i * bw + 22;
+    s += '<line x1="' + cx + '" y1="18" x2="' + cx + '" y2="178" stroke="#f6e2c0" stroke-width="3"/>';
+    s += woodBeadMark(cx, c.h ? 62 : 28);
+    for (let b = 0; b < 4; b++) {
+      const y = b < c.e ? (96 + b * 16) : (132 + b * 14);
+      s += woodBeadMark(cx, y);
+    }
+    s += '<text x="' + cx + '" y="206" text-anchor="middle" font-size="12" font-family="Segoe UI, sans-serif" fill="#3a2410">' + (c.lab || '') + '</text>';
+  });
+  s += '</svg>';
+  return '<figure class="wood-fig">' + s + '<figcaption>' + esc(caption) + '</figcaption></figure>';
+}
+function woodBookHTML() {
+  const chapters = [
+    {
+      title: '1. Đọc số',
+      body: '<p>Chỉ hạt <b>chạm thanh gỗ giữa</b> mới được tính. Hạt nằm xa thanh là 0.</p>' +
+        '<p>Hạt trên chạm thanh = <b>5</b>. Mỗi hạt dưới chạm thanh = <b>1</b>. Một cột nhiều nhất là 9, vì 5 + 4 = 9.</p>' +
+        '<p>Cột ngoài cùng bên phải là hàng đơn vị. Cột bên trái kế đó là hàng chục, rồi đến trăm, nghìn. Chấm đồng trên thanh đánh dấu hàng đơn vị và hàng nghìn.</p>' +
+        woodFig([{ h: 0, e: 0, lab: 'đơn vị' }], 'Tất cả hạt xa thanh. Đây là 0.') +
+        woodFig([{ h: 1, e: 2, lab: 'đơn vị' }], 'Hạt trên và 2 hạt dưới chạm thanh: 5 + 2 = 7.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], 'Một hạt dưới ở cột chục. Đó là 10.') +
+        woodFig([{ h: 0, e: 3, lab: 'chục' }, { h: 1, e: 1, lab: 'đơn vị' }], '3 ở cột chục là 30. Hạt trên và 1 hạt dưới ở cột đơn vị là 6. Thành 36.') +
+        '<p class="ex">Mẹo: đọc từ trái sang phải. Nói to “ba chục và sáu” trước khi nói 36.</p>'
+    },
+    {
+      title: '2. Cộng, còn hạt',
+      body: '<p>Nếu cột còn hạt dưới chưa chạm thanh, hãy đẩy thêm hạt vào thanh. Không cần mẹo.</p>' +
+        woodFig([{ h: 0, e: 2, lab: 'đơn vị' }], 'Bắt đầu: 2.') +
+        woodFig([{ h: 0, e: 3, lab: 'đơn vị' }], '2 + 1: đẩy thêm 1 hạt dưới. Thành 3.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 3, lab: 'đơn vị' }], '13 là 1 ở cột chục và 3 ở cột đơn vị.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], '13 + 1: cột đơn vị còn 1 hạt dưới. Đẩy nó lên. Thành 14.') +
+        '<p class="ex">Mẹo: đếm hạt sắp đẩy, đừng đếm lại cả cột nếu bạn đã biết số cũ.</p>'
+    },
+    {
+      title: '3. Cộng — bạn của 5',
+      body: '<p>Khi không còn đủ hạt dưới, dùng bạn của 5.</p>' +
+        '<p>+1 = +5 − 4. +2 = +5 − 3. +3 = +5 − 2. +4 = +5 − 1.</p>' +
+        '<p>Nói to câu này trước khi kéo hạt: “cộng 5, trả lại phần thừa.”</p>' +
+        woodFig([{ h: 0, e: 2, lab: 'đơn vị' }], '2 + 3. Đang có 2. Không đủ 3 hạt dưới.') +
+        woodFig([{ h: 1, e: 2, lab: 'đơn vị' }], 'Đẩy hạt trên xuống: cộng 5. Tạm thành 7.') +
+        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], 'Kéo 2 hạt dưới ra: trừ 2. Còn hạt trên, là 5. Đúng, vì 2 + 3 = 5.') +
+        woodFig([{ h: 0, e: 4, lab: 'đơn vị' }], '4 + 1. +1 = +5 − 4. Hạt trên xuống, kéo hết 4 hạt dưới ra.') +
+        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], 'Còn 5. Đúng.') +
+        '<p class="ex">Mẹo: hai số cộng thành 5 là bạn của nhau: 1 với 4, 2 với 3.</p>'
+    },
+    {
+      title: '4. Cộng — bạn của 10',
+      body: '<p>Khi cột này không chứa nổi phép cộng, sang cột bên trái cộng 1 chục, rồi trả lại phần thừa ở cột này.</p>' +
+        '<p>+1 = +10 − 9. +2 = +10 − 8. +3 = +10 − 7. +4 = +10 − 6. +5 = +10 − 5. +6 = +10 − 4. +7 = +10 − 3. +8 = +10 − 2. +9 = +10 − 1.</p>' +
+        woodFig([{ h: 1, e: 4, lab: 'đơn vị' }], '9 + 1. Cột đơn vị đang là 9. Không thêm được hạt nào.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 1, e: 4, lab: 'đơn vị' }], 'Cột chục đẩy 1 hạt dưới: cộng 10. Tạm thành 19.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], 'Cột đơn vị kéo hết hạt ra: trừ 9. Còn 10. Đúng, vì 9 + 1 = 10.') +
+        woodFig([{ h: 1, e: 3, lab: 'đơn vị' }], '8 + 6. 8 cần 2 để thành 10, mà 6 là 2 và 4. Cách trên bàn: +6 = +10 − 4.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], 'Cộng 10 ở cột chục, rồi trừ 4 ở cột đơn vị. 8 − 4 = 4. Thành 14.') +
+        '<p class="ex">Mẹo: nói “cộng mười, trả bốn” trước khi tay kéo. Tay sẽ không kéo nhầm chiều.</p>'
+    },
+    {
+      title: '5. Trừ, còn hạt',
+      body: '<p>Nếu hạt đang chạm thanh đủ để kéo ra, hãy kéo ra. Đó là trừ thẳng.</p>' +
+        woodFig([{ h: 1, e: 3, lab: 'đơn vị' }], '8 là hạt trên và 3 hạt dưới.') +
+        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], '8 − 3: kéo 3 hạt dưới ra. Còn hạt trên, là 5.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], '14 − 2: cột đơn vị có 4 hạt. Kéo 2 hạt ra.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 2, lab: 'đơn vị' }], 'Còn 12.') +
+        '<p class="ex">Mẹo: trừ thẳng chỉ khi hạt đang chạm thanh nhiều hơn hoặc bằng số cần trừ.</p>'
+    },
+    {
+      title: '6. Trừ, không đủ hạt',
+      body: '<p>Làm ngược bạn của 5 hoặc bạn của 10.</p>' +
+        '<p>−1 = −5 + 4. −2 = −5 + 3. −3 = −5 + 2. −4 = −5 + 1.</p>' +
+        '<p>Qua hàng chục: −1 = −10 + 9, −4 = −10 + 6, −6 = −10 + 4.</p>' +
+        woodFig([{ h: 1, e: 0, lab: 'đơn vị' }], '5 − 2. Chỉ có hạt trên. −2 = −5 + 3.') +
+        woodFig([{ h: 0, e: 3, lab: 'đơn vị' }], 'Kéo hạt trên ra, đẩy 3 hạt dưới vào. Còn 3. Đúng, vì 5 − 2 = 3.') +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 3, lab: 'đơn vị' }], '13 − 6. Cột đơn vị chỉ có 3, không đủ kéo 6. −6 = −10 + 4.') +
+        woodFig([{ h: 0, e: 0, lab: 'chục' }, { h: 1, e: 2, lab: 'đơn vị' }], 'Kéo 1 hạt ở cột chục. Cột đơn vị thêm 4: 3 + 4 = 7. Thành 7.') +
+        '<p class="ex">Mẹo: hỏi “mình lấy thừa hay lấy thiếu?” Nếu trừ 10 thay vì trừ 6, là lấy thừa 4, phải trả 4 lại.</p>'
+    },
+    {
+      title: '7. Nhân',
+      body: '<p>Nhân từng hàng, từ trái sang phải. Nếu một hàng ra từ 10 trở lên, phần chục sang cột bên trái, phần đơn vị ở lại cột này.</p>' +
+        woodFig([{ h: 0, e: 1, lab: 'chục' }, { h: 0, e: 2, lab: 'đơn vị' }], '4 × 3 = 12. Không nhét 12 vào một cột. Đặt 1 ở cột chục và 2 ở cột đơn vị.') +
+        '<p>12 × 3. Tách 12 thành 10 và 2.</p>' +
+        woodFig([{ h: 0, e: 3, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], '10 × 3 = 30. Đặt 3 hạt dưới ở cột chục.') +
+        woodFig([{ h: 0, e: 3, lab: 'chục' }, { h: 1, e: 1, lab: 'đơn vị' }], '2 × 3 = 6. Cộng 6 vào cột đơn vị. Thành 36.') +
+        '<p>12 × 13. Tách 13 thành 10 và 3. Làm từ trái.</p>' +
+        woodFig([{ h: 0, e: 1, lab: 'trăm' }, { h: 0, e: 2, lab: 'chục' }, { h: 0, e: 0, lab: 'đơn vị' }], '12 × 10 = 120. Đặt 1 ở cột trăm, 2 ở cột chục.') +
+        woodFig([{ h: 0, e: 1, lab: 'trăm' }, { h: 1, e: 0, lab: 'chục' }, { h: 1, e: 1, lab: 'đơn vị' }], '12 × 3 = 36. Cộng 3 vào cột chục và 6 vào cột đơn vị. 120 + 36 = 156.') +
+        '<p class="ex">Mẹo: 6 × 7 = 42 thì cột đang nhân chỉ giữ 2. Số 4 phải sang cột trái. Đừng cố xếp 42 trên một trục.</p>'
+    },
+    {
+      title: '8. Chia',
+      body: '<p>Chia từ trái sang phải. Hỏi số chia vừa mấy lần trong các chữ số đầu. Đặt thương ở cột đó, rồi trừ tích đi. Hạ chữ số tiếp theo và làm lại.</p>' +
+        '<p>84 ÷ 4.</p>' +
+        woodFig([{ h: 1, e: 3, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], 'Bắt đầu: 84. 8 ở cột chục, 4 ở cột đơn vị.') +
+        woodFig([{ h: 0, e: 2, lab: 'chục' }, { h: 0, e: 4, lab: 'đơn vị' }], '4 vừa 8 đúng 2 lần. Đặt thương 2 ở cột chục, trừ 8. Còn 4 ở cột đơn vị.') +
+        woodFig([{ h: 0, e: 2, lab: 'chục' }, { h: 0, e: 1, lab: 'đơn vị' }], '4 vừa 4 đúng 1 lần. Đặt 1 ở cột đơn vị, trừ 4. Thương là 21, dư 0.') +
+        '<p>14 ÷ 4. Số 1 nhỏ hơn 4, nên không chia ở cột chục. Lấy cả 14.</p>' +
+        woodFig([{ h: 0, e: 0, lab: 'chục' }, { h: 0, e: 3, lab: 'đơn vị' }], '4 × 3 = 12. Đặt thương 3 ở cột đơn vị. 14 − 12 = 2.') +
+        '<p class="ex">Dư là hạt còn lại khi không trừ thêm một lần nữa. 20 ÷ 6: 6 × 3 = 18, đặt 3, còn 2. 2 nhỏ hơn 6 nên dừng. Thương 3, dư 2.</p>' +
+        '<p class="ex">Mẹo: dư luôn nhỏ hơn số chia. Nếu dư lớn hơn hoặc bằng số chia, bạn chia thiếu một lần.</p>'
+    },
+    {
+      title: '9. Mẹo',
+      body: '<p>Xóa bàn về 0 trước mỗi bài. Số trên tấm gỗ phải là 0. Nếu không, một hạt còn chạm thanh sẽ làm sai cả bài.</p>' +
+        '<p>Nói mẹo thành tiếng trước khi tay kéo. “Cộng năm, trả hai.” “Cộng mười, trả bốn.” Tay nghe miệng, ít kéo nhầm chiều.</p>' +
+        '<p>Bạn của 5: 1–4, 2–3. Bạn của 10: 1–9, 2–8, 3–7, 4–6, 5–5. Thuộc sáu cặp này thì cộng trừ nhanh hơn đếm hạt.</p>' +
+        '<p>Nhân và chia luôn đi từ trái sang phải. Cộng trừ một chữ số thì làm ở cột đơn vị trước, chỉ sang cột trái khi phải mượn hoặc nhớ.</p>' +
+        '<p>Sau mỗi bước, đọc số trên tấm gỗ. Nếu không khớp ví dụ trong sách, dừng lại, đừng làm bước sau.</p>' +
+        '<p>Mỗi ngày một ví dụ là đủ: một bài cộng bạn của 5, một bài qua hàng chục, rồi một bài nhân nhỏ. Đừng làm hết sách trong một buổi.</p>' +
+        '<p class="ex">Để sách này mở bên cạnh Soroban. Làm đúng hình nào, kéo bàn gỗ thật cho khớp hình đó, rồi bấm Nghe nếu cần nghe lại câu mẹo.</p>'
+    }
+  ];
+  const i = Math.max(0, Math.min(chapters.length - 1, state.woodChap || 0));
+  const ch = chapters[i];
+  const nav = chapters.map(function (c, n) {
+    return '<button type="button" class="' + (n === i ? 'on' : '') + '" data-act="wood-chap" data-i="' + n + '">' + esc(c.title) + '</button>';
+  }).join('');
+  return '<aside class="wood-book" role="dialog" aria-label="Sách Soroban"><div class="wood-bookbar"><strong>Sách Soroban</strong>' +
+    '<button type="button" data-act="wood-book">Đóng sách</button></div>' +
+    '<nav>' + nav + '</nav><article><h2>' + esc(ch.title) + '</h2>' + ch.body + '</article>' +
+    '<div class="wood-booknav"><button type="button" data-act="wood-chap" data-i="' + Math.max(0, i - 1) + '">Chương trước</button>' +
+    '<span>' + (i + 1) + ' / ' + chapters.length + '</span>' +
+    '<button type="button" data-act="wood-chap" data-i="' + Math.min(chapters.length - 1, i + 1) + '">Chương sau</button></div></aside>';
 }
 function paintWoodRod(i) {
   const col = document.querySelectorAll('.wood-rod')[i];
@@ -2526,6 +2665,18 @@ function onClick(e) {
   }
   if (act === 'wood-toggle') {
     state.woodOpen = !state.woodOpen;
+    if (!state.woodOpen) state.woodBook = false;
+    render();
+    return;
+  }
+  if (act === 'wood-book') {
+    state.woodOpen = true;
+    state.woodBook = !state.woodBook;
+    render();
+    return;
+  }
+  if (act === 'wood-chap') {
+    state.woodChap = Number(el.dataset.i) || 0;
     render();
     return;
   }
